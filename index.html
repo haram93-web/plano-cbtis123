@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#eef0f2">
+<title>Plano interactivo · CBTis 123</title>
+<meta name="description" content="Plano interactivo del CBTis 123: mapa 2D con edificios, talleres y aulas, rutas con tiempo estimado, recorrido en vista de calle y recorrido 3D.">
+<meta property="og:title" content="Plano interactivo · CBTis 123">
+<meta property="og:description" content="Encuentra aulas, talleres y oficinas, traza rutas y recorre el plantel en vista de calle o en 3D.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231f3a5f'/%3E%3Cpath d='M12 22 32 12l20 10v4H12z' fill='%23fff'/%3E%3Cpath d='M16 30h6v16h-6zm13 0h6v16h-6zm13 0h6v16h-6zM12 49h40v5H12z' fill='%23fff'/%3E%3C/svg%3E">
+<style>
+:root{--ac:#2563eb;--ink:#1b2438;--mu:#6b7690;--g:rgba(255,255,255,.86);--sh:0 8px 30px rgba(20,35,70,.16);--sheet:0px;--ease:cubic-bezier(.2,.9,.2,1)}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:#e8edf4;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink)}
+button{font-family:inherit;color:inherit;cursor:pointer;border:0;background:none}
+#map{position:fixed;inset:0;width:100%;height:100%;touch-action:none;cursor:grab;display:block}
+.glass{background:var(--g);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:var(--sh)}
+.z{cursor:pointer}
+.z rect{stroke:#fff;stroke-width:2.5;transition:fill .3s,transform .35s var(--ease)}
+.z:hover rect{transform:scale(1.015);transform-box:fill-box;transform-origin:center}
+.z.on rect{fill:var(--ac)!important;transform:scale(1.03);transform-box:fill-box;transform-origin:center}
+.ic{font-size:34px;text-anchor:middle;pointer-events:none}
+.lb{font:600 20px system-ui,sans-serif;fill:#2b3652;text-anchor:middle;pointer-events:none;letter-spacing:.2px}
+.z.on .lb{fill:#fff}
+/* búsqueda flotante */
+.top{position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 12px);max-width:520px;margin:0 auto;z-index:5}
+.bar{display:flex;align-items:center;gap:4px;border-radius:99px;padding:5px}
+.ib{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;flex:none;transition:background .2s}
+.ib:hover{background:rgba(37,99,235,.1)}
+.ib svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+#q{flex:1;min-width:0;border:0;background:none;outline:0;font-size:1rem;padding:8px 4px;color:var(--ink)}
+#q::placeholder{color:var(--mu)}
+/* rosa de los vientos, leyenda y escala */
+#rosa{position:fixed;right:12px;top:calc(env(safe-area-inset-top,0px) + 84px);width:76px;height:76px;z-index:4;border-radius:50%;display:grid;place-items:center;pointer-events:none}
+#rosa svg{width:68px;height:68px}
+#mi{position:fixed;left:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 16px + var(--sheet));z-index:5;display:flex;align-items:flex-end;gap:10px;transition:bottom .5s var(--ease)}
+.lgb{display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:10px;font:700 .8rem system-ui,sans-serif;color:var(--ac)}
+.lgb svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+.lgb svg circle{fill:currentColor;stroke:none}
+.lgp{position:absolute;left:0;bottom:calc(100% + 8px);width:min(300px,calc(100vw - 24px));max-height:min(74vh,600px);overflow:auto;border-radius:12px;padding:12px 14px}
+.lgp[hidden],#esc2[hidden]{display:none}
+.lgp h4{font-size:.68rem;letter-spacing:.8px;text-transform:uppercase;color:var(--mu);margin:2px 0 6px}
+.lgp h4:not(:first-child){margin-top:12px}
+.lgp ul{list-style:none;margin:0;padding:0}
+.lgp li{display:flex;align-items:center;gap:9px;font-size:.78rem;line-height:1.25;padding:3px 0}
+.lgp small{display:block;margin-top:10px;font-size:.7rem;color:var(--mu)}
+.lgp .sw{width:22px;height:14px;border-radius:2px;border:1px solid #56657a;flex:none}
+.lgp .sw.ln{height:0;border:0;border-top:3px solid #1f4e8c;border-radius:0}
+.lgp .ci,.lgp .pl,.lgp .dt{flex:none;width:20px;height:20px;display:grid;place-items:center;font:800 .68rem system-ui,sans-serif;font-style:normal;color:#fff}
+.lgp .ci{border-radius:50%;background:#1c2633;border:2px solid #fff;box-shadow:0 0 0 1px #cfd5dc}
+.lgp .pl{border-radius:4px;background:#5b8a6a;font-size:1rem}
+.lgp .dt{width:12px;height:12px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #cfd5dc;display:inline-block}
+.lgp .ic{width:24px;height:18px;flex:none}
+#esc2{align-self:flex-end;padding:6px 10px 5px;border-radius:8px;font:700 .72rem system-ui,sans-serif;color:var(--ink)}
+#escb{height:7px;border:2px solid var(--ink);border-top:0;margin-bottom:3px}
+/* ruta en el plano + tiempo */
+.tt{display:flex;align-items:center;gap:8px;margin-top:8px;max-width:100%;padding:9px 14px;border-radius:10px;font:600 .8rem/1.25 system-ui,sans-serif;color:var(--ac);text-align:left;transition:background .2s}
+.tt:hover{background:#fff}
+.tt svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ttc{margin-top:8px;border-radius:10px;padding:12px 14px;max-height:calc(100vh - 150px);overflow:auto}
+.ttc[hidden],#ttr[hidden]{display:none}
+.tth{display:flex;align-items:center;justify-content:space-between}
+.ttc h4{font-size:.7rem;letter-spacing:.8px;text-transform:uppercase;color:var(--mu)}
+.ttg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.ttg label{font-size:.68rem;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.6px;min-width:0}
+.ttg select{display:block;width:100%;margin-top:3px;padding:8px 6px;border:1px solid #cfd5dc;border-radius:8px;background:#fff;color:#1c2633;font:600 .76rem system-ui,sans-serif;text-transform:none;letter-spacing:0}
+#ttr{margin-top:10px}
+#ttm{display:block;font-size:1.1rem}
+#ttd{font-size:.8rem;color:var(--mu);margin-top:2px}
+#ttr details{margin-top:8px;font-size:.8rem}
+#ttr summary{cursor:pointer;font-weight:700;color:var(--ac)}
+#tts{margin:6px 0 0 18px;line-height:1.5}
+#ttr small{display:block;margin-top:8px;color:var(--mu);font-size:.72rem}
+#ttr .pri,#ttr .sec{margin-top:8px;padding:10px}
+#rt2{pointer-events:none}
+.rth{fill:none;stroke:#fff;stroke-width:11;stroke-linecap:round;stroke-linejoin:round;opacity:.92}
+.rtl{fill:none;stroke:var(--ac);stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:12 9;animation:rtd .9s linear infinite}
+@keyframes rtd{to{stroke-dashoffset:-21}}
+@media(prefers-reduced-motion:reduce){.rtl{animation:none}}
+.rts{fill:#2e9d57;stroke:#fff;stroke-width:3}.rte{fill:#d64545;stroke:#fff;stroke-width:3}
+#res{display:none;margin-top:8px;border-radius:22px;padding:6px;max-height:50vh;overflow:auto}
+#res.open{display:block}
+.row{display:flex;align-items:center;gap:12px;width:100%;padding:9px;border-radius:16px;text-align:left;transition:background .15s}
+.row:hover{background:rgba(37,99,235,.08)}
+.row b{width:40px;height:40px;border-radius:14px;display:grid;place-items:center;font-size:1.2rem;flex:none}
+.row span{font-weight:600;font-size:.92rem;display:block}
+.row small{display:block;color:var(--mu);font-weight:500;font-size:.76rem;margin-top:1px}
+#res p{padding:12px;color:var(--mu);font-size:.88rem}
+/* panel deslizable */
+.bd{position:fixed;inset:0;background:rgba(15,25,50,.28);opacity:0;pointer-events:none;transition:opacity .3s;z-index:7}
+.bd.open{opacity:1;pointer-events:auto}
+.dr{position:fixed;top:0;bottom:0;left:0;width:min(330px,86vw);z-index:8;transform:translateX(-105%);transition:transform .45s var(--ease);padding:calc(env(safe-area-inset-top,0px) + 18px) 12px 16px;overflow:auto;border-radius:0 28px 28px 0}
+.dr.open{transform:none}
+.dr h3{padding:2px 10px 10px;font-size:1.05rem}
+.dr h3 small{display:block;color:var(--mu);font-weight:500;font-size:.78rem;margin-top:2px}
+/* zoom */
+.zc{position:fixed;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 16px + var(--sheet));z-index:4;display:flex;flex-direction:column;border-radius:18px;overflow:hidden;transition:bottom .5s var(--ease)}
+.zc button{width:42px;height:42px;font-size:1.3rem;display:grid;place-items:center;color:#41506f}
+.zc button+button{border-top:1px solid rgba(27,36,56,.08)}
+.zc button:hover{background:rgba(37,99,235,.1)}
+.zc svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2}
+/* bottom sheet */
+.sheet{position:fixed;z-index:6;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);max-width:520px;margin:0 auto;border-radius:28px;padding:10px 18px 18px;transform:translateY(calc(100% + 60px));transition:transform .5s var(--ease)}
+.sheet.show{transform:none}
+.hd{display:block;width:38px;height:4px;border-radius:9px;background:rgba(27,36,56,.18);margin:0 auto 12px}
+.head{display:flex;align-items:center;gap:12px}
+.head b{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;font-size:1.5rem;flex:none}
+.head div{flex:1;min-width:0}
+.head h2{font-size:1.1rem;line-height:1.2}
+.tag{color:var(--mu);font-size:.78rem;font-weight:600}
+.seg{display:none;gap:4px;margin-top:14px;padding:4px;border-radius:14px;background:rgba(27,36,56,.06)}
+.seg.show{display:flex}
+.seg button{flex:1;padding:8px;border-radius:11px;font-size:.82rem;font-weight:700;color:var(--mu);transition:.25s}
+.seg button.on{background:#fff;color:var(--ac);box-shadow:0 2px 8px rgba(20,35,70,.12)}
+#cf{margin-top:12px;font-weight:600;font-size:.92rem}
+#cd{margin-top:4px;color:var(--mu);font-size:.86rem;line-height:1.45}
+.pri{margin-top:14px;width:100%;padding:12px;border-radius:16px;background:var(--ac);color:#fff;font-weight:700;font-size:.9rem;box-shadow:0 6px 16px rgba(37,99,235,.35);transition:transform .15s}
+.pri:active{transform:scale(.98)}
+@media(min-width:761px){
+ .sheet{left:20px;right:auto;bottom:20px;width:380px;margin:0}
+ .zc{bottom:20px}
+}
+
+:root{--ac:#1f3a5f;--ink:#1c2633;--mu:#5d6978;--g:rgba(255,255,255,.97);--sh:0 1px 2px rgba(20,30,45,.16),0 4px 14px rgba(20,30,45,.08)}
+html,body{background:#eef0f2}
+.glass{backdrop-filter:none;-webkit-backdrop-filter:none;border:1px solid #cfd5dc}
+.bar,#res,.zc{border-radius:10px}
+.ib,.row,.seg button,.pri{border-radius:8px}
+.row b,.head b{border-radius:6px;border:1px solid rgba(31,58,95,.35);font:700 .85rem ui-monospace,Menlo,Consolas,monospace;color:var(--ink)}
+.head b{font-size:1.15rem}
+.dr{border-radius:0}
+.sheet{border-radius:14px 14px 10px 10px}
+.seg{border-radius:10px}
+.seg button.on{box-shadow:0 1px 2px rgba(20,30,45,.2)}
+.pri{box-shadow:none}
+.tag{text-transform:uppercase;letter-spacing:.8px;font-size:.7rem}
+.z rect{stroke:#56657a;stroke-width:1;vector-effect:non-scaling-stroke;transition:fill .2s}
+.z:hover rect{transform:none;fill-opacity:.82}
+.z.on rect{fill:var(--ac)!important;stroke:#0d1b2e;stroke-width:2;transform:none}
+.lb{font:600 17px system-ui,sans-serif;letter-spacing:.6px;fill:#2e3a4a}
+.sb{font:500 12px system-ui,sans-serif;fill:#5d6978;text-anchor:middle;letter-spacing:.9px;pointer-events:none}
+.z.on .lb{fill:#fff}.z.on .sb{fill:#c4d2e6}
+
+/* ===== Vista de calle ===== */
+.svb{position:fixed;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 156px + var(--sheet));z-index:4;display:flex;align-items:center;gap:8px;height:42px;padding:0 14px 0 10px;border-radius:10px;font-weight:700;font-size:.76rem;letter-spacing:.5px;text-transform:uppercase;color:var(--ac);transition:bottom .5s var(--ease)}
+.svb svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2}
+@media(min-width:761px){.svb{bottom:160px}}
+#sv{position:fixed;inset:0;z-index:30;background:#0e1621;color:#fff;opacity:0;visibility:hidden;transition:opacity .35s,visibility .35s;overflow:hidden;user-select:none;-webkit-user-select:none}
+#sv.open{opacity:1;visibility:visible}
+.ph{position:absolute;inset:0;background-position:center;background-size:cover;opacity:0;transition:opacity .7s ease,transform .9s cubic-bezier(.2,.8,.2,1)}
+.ph.on{opacity:1;transform:none!important}
+.sv-top{position:absolute;top:0;left:0;right:0;display:flex;gap:12px;align-items:flex-start;justify-content:space-between;padding:calc(env(safe-area-inset-top,0px) + 12px) 14px 34px;background:linear-gradient(rgba(8,14,24,.75),transparent)}
+.sv-top h2{font-size:1.05rem;letter-spacing:.3px}
+.sv-top small{display:block;opacity:.75;font-size:.7rem;text-transform:uppercase;letter-spacing:.9px;margin-top:3px}
+.sv-x{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:8px;background:rgba(255,255,255,.96);color:#1c2633;font-weight:700;font-size:.78rem;flex:none}
+.sv-x svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.6}
+.nv{position:absolute;width:56px;height:56px;border-radius:10px;background:rgba(10,20,34,.55);border:1px solid rgba(255,255,255,.4);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:grid;place-items:center;color:#fff;transition:background .2s,opacity .25s,transform .15s}
+.nv:hover{background:rgba(31,58,95,.92)}.nv:active{transform:scale(.94)}
+.nv.off{opacity:.16;pointer-events:none}
+.nv svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:square}
+#nf{left:50%;margin-left:-28px;bottom:calc(env(safe-area-inset-bottom,0px) + 104px)}
+#nb{left:50%;margin-left:-28px;bottom:calc(env(safe-area-inset-bottom,0px) + 32px)}
+#nl{left:16px;top:50%;margin-top:-28px}
+#nr{right:16px;top:50%;margin-top:-28px}
+#you circle.pl{animation:pl 1.8s ease-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes pl{from{transform:scale(.6);opacity:.8}to{transform:scale(2.4);opacity:0}}
+
+/* ===== Recorrido completo · día/noche ===== */
+.ph{transition:opacity .7s ease,transform .9s cubic-bezier(.2,.8,.2,1),filter .6s ease}
+.sv-top small{margin:0 0 3px}
+.sv-top h2{line-height:1.25}.ub{font-weight:500;opacity:.7}
+#svsel{margin-top:8px;max-width:240px;background:rgba(10,20,34,.6);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:8px;padding:7px 8px;font:600 .74rem system-ui,sans-serif}
+#svsel option{color:#1c2633}
+.sm{display:flex;align-items:center;gap:8px;width:auto;padding:0 14px;right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 32px);font:700 .76rem system-ui,sans-serif;text-transform:uppercase;letter-spacing:.7px}
+.sm svg{width:22px;height:22px}
+#sv.noche .sm{background:rgba(31,58,95,.92)}
+
+/* ===== Botón "Ver vista del aula" en la tarjeta ===== */
+.sec{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:8px;padding:12px;border-radius:8px;border:1px solid var(--ac);background:#fff;color:var(--ac);font-weight:700;font-size:.9rem;animation:rise .4s var(--ease);transition:background .2s}
+.sec:hover{background:#eef2f8}
+.sec[hidden]{display:none}
+.sec svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ===== Recorrido 3D ===== */
+.t3{bottom:calc(env(safe-area-inset-bottom,0px) + 208px + var(--sheet))}
+@media(min-width:761px){.t3{bottom:212px}}
+#td{position:fixed;inset:0;z-index:31;background:#dfe5ea;color:#fff;opacity:0;visibility:hidden;transition:opacity .35s,visibility .35s;touch-action:none;overflow:hidden}
+#td.open{opacity:1;visibility:visible}
+#tc{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab;touch-action:none}
+#tf{left:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 104px)}
+#tb{left:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 32px)}
+#tl{right:88px;bottom:calc(env(safe-area-inset-bottom,0px) + 32px)}
+#tr{right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 32px)}
+#tp{left:50%;margin-left:-90px;width:180px;bottom:calc(env(safe-area-inset-bottom,0px) + 32px);display:flex;gap:8px;align-items:center;justify-content:center;font:700 .76rem system-ui,sans-serif;text-transform:uppercase;letter-spacing:.6px}
+#tp svg{width:20px;height:20px}
+@media(max-width:520px){#tl{right:84px}#tp{margin-left:-62px;width:124px;font-size:.66rem}}
+
+/* ===== Cómo llegar ===== */
+#tdsel,#svdest{display:block;margin-top:8px;max-width:250px;background:rgba(10,20,34,.6);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:8px;padding:7px 8px;font:600 .74rem system-ui,sans-serif}
+#tdsel option,#svdest option{color:#1c2633}
+.rt{margin-top:8px;max-width:270px;font-size:.78rem;font-weight:600;line-height:1.3;background:rgba(37,99,235,.92);padding:8px 10px;border-radius:8px}
+.rt[hidden],.sv-x[hidden]{display:none}
+#tgo{margin-top:8px}
+@keyframes hint{0%,100%{box-shadow:0 0 0 0 rgba(37,99,235,.75)}50%{box-shadow:0 0 0 12px rgba(37,99,235,0)}}
+.nv.hint{background:rgba(37,99,235,.95);border-color:#fff;animation:hint 1.2s infinite}
+
+/* ===== Ajustes tras probar en celular ===== */
+#td,#sv{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.sv-top>div{min-width:0;flex:1}
+.sv-x{white-space:normal;text-align:left;line-height:1.15;max-width:150px}
+#tp{left:auto;right:16px;margin-left:0;width:auto;padding:0 14px;bottom:calc(env(safe-area-inset-bottom,0px) + 104px);font-size:.72rem}
+
+/* ===== Sección "Ver aulas" por planta ===== */
+.aul{padding:2px 6px 12px;border-bottom:1px solid rgba(27,36,56,.1);margin-bottom:8px}
+.aul h4{font-size:.74rem;letter-spacing:.8px;text-transform:uppercase;color:var(--mu);margin:4px 4px 8px}
+#aulc{float:right;text-transform:none;letter-spacing:0;font-weight:600}
+.seg2{display:flex;gap:4px;padding:4px;border-radius:10px;background:rgba(27,36,56,.06)}
+.seg2 button{flex:1;padding:8px;border-radius:8px;font-size:.8rem;font-weight:700;color:var(--mu)}
+.seg2 button.on{background:#fff;color:var(--ac);box-shadow:0 1px 2px rgba(20,30,45,.2)}
+#aulg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+.ch{border:1px solid rgba(31,58,95,.25);border-radius:8px;padding:6px 4px;text-align:center;background:#fff}
+.ch b{display:block;font:700 .95rem ui-monospace,Menlo,Consolas,monospace}
+.ch small{display:block;color:var(--mu);font-size:.62rem;line-height:1.15}
+.ch:hover{background:#eef2f8}
+
+/* ===== Mis fotos (cargar fotos desde el teléfono) ===== */
+.pb{left:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 32px);width:auto;padding:0 14px;display:flex;align-items:center;gap:8px;font:700 .76rem system-ui,sans-serif;text-transform:uppercase;letter-spacing:.6px}
+.pb svg{width:22px;height:22px}
+#pm{position:absolute;left:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 100px);width:min(320px,calc(100% - 32px));background:rgba(255,255,255,.97);color:#1c2633;border-radius:12px;padding:12px;box-shadow:0 8px 30px rgba(0,0,0,.35);display:flex;flex-direction:column;gap:6px;z-index:3}
+#pm[hidden],#pm button[hidden]{display:none}
+#pm b{font-size:.84rem;line-height:1.25}
+#pm button{padding:10px;border-radius:8px;border:1px solid rgba(31,58,95,.3);background:#fff;font:600 .82rem system-ui,sans-serif;color:#1f2f78;text-align:left}
+#pm button:hover{background:#eef2f8}
+#pm small{color:#5d6978;font-size:.7rem;line-height:1.3}
+
+/* ===== Mover y acercar la foto ===== */
+#sv{touch-action:none}
+.ph{background-repeat:no-repeat}
+#vh{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 190px);transform:translateX(-50%);max-width:min(340px,calc(100% - 32px));background:rgba(10,20,34,.78);color:#fff;font-size:.78rem;font-weight:600;line-height:1.3;text-align:center;padding:9px 14px;border-radius:10px;pointer-events:none;transition:opacity .6s;z-index:2}
+#vh[hidden]{display:none}
+
+/* ===== v34 · plano según el croquis oficial: bloques con volumen ===== */
+.z rect.ex{fill:#1c2633!important;opacity:.17;stroke:none;pointer-events:none;transform:none!important}
+.z rect.rf{fill:url(#rfg)!important;opacity:1;stroke:none;pointer-events:none;transform:none!important}
+.z.on rect.rf{opacity:.2}
+.z .pk{fill:none;stroke:#b4bbc6;stroke-width:1.4;pointer-events:none}
+.z .mk{fill:none;stroke:#fff;stroke-width:2.5;pointer-events:none}
+.rm{font:600 12px system-ui,sans-serif;fill:#2b3652;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.rt{font:700 8.5px system-ui,sans-serif;fill:#6b7690;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.rl{stroke:#8d98a8;stroke-width:.9;pointer-events:none}
+.z.on .rm{fill:#fff}.z.on .rt{fill:#cfe0ff}.z.on .rl{stroke:#9db8e6}
+</style>
+</head>
+<body>
+<svg id="map" xmlns="http://www.w3.org/2000/svg">
+<defs><linearGradient id="rfg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".62"/><stop offset="1" stop-color="#fff" stop-opacity=".12"/></linearGradient><pattern id="gr" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M100 0H0V100" fill="none" stroke="#dfe3e8" stroke-width="1"/></pattern></defs>
+<g id="vp">
+ <rect x="-3000" y="-3000" width="7000" height="7000" fill="#eef0f2"/>
+ <rect x="-3000" y="-3000" width="7000" height="7000" fill="url(#gr)"/>
+ <rect x="-3000" y="1315" width="7000" height="56" fill="#d3d7dc"/>
+ <path d="M-3000 1343H4000" stroke="#fff" stroke-width="3" stroke-dasharray="24 16"/>
+ <text x="1180" y="1362" text-anchor="middle" font-size="14" font-weight="600" fill="#6b7685" font-family="system-ui" letter-spacing="2.5">AV. LÁZARO CÁRDENAS</text>
+ <path d="M47 1290V148L1090 205L1060 488L1408 488L1408 611L1222 611L1195 1300" fill="none" stroke="#d0d5dc" stroke-width="64" stroke-linejoin="round"/>
+ <polygon points="45,148 1090,205 1060,488 1408,488 1408,611 1222,611 1195,1300 420,1300 420,590 100,590 100,375 45,375" fill="#dcdfe6" stroke="#1d4e89" stroke-width="3" style="vector-effect:non-scaling-stroke"/>
+ <path d="M47 378H100V590H420V1275H50Z" fill="#cddfa6" stroke="#9aa3ad" stroke-width="1.5" style="vector-effect:non-scaling-stroke"/>
+ <g id="lw" fill="#cbd9c6"></g>
+ <g id="zs"></g>
+ <g id="pr"></g>
+</g>
+</svg>
+
+<div class="top">
+ <div class="bar glass">
+  <button class="ib" id="mb" aria-label="Menú"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+  <input id="q" type="search" placeholder="Buscar aula, oficina o área…" autocomplete="off">
+  <button class="ib" id="qx" aria-label="Limpiar" style="display:none"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+ </div>
+ <button id="tt" class="tt glass" type="button" aria-expanded="false" aria-controls="ttc"><svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M8.5 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.5"/></svg><span>Trazar ruta y calcular tiempo</span></button>
+ <div id="ttc" class="ttc glass" hidden>
+  <div class="tth"><h4>Ruta en el plano</h4><button class="ib" id="ttx" type="button" aria-label="Cerrar"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="ttg"><label>Desde<select id="tfrom"></select></label><label>Hasta<select id="tto"></select></label></div>
+  <div id="ttr" hidden>
+   <b id="ttm"></b><p id="ttd"></p>
+   <details><summary>Ver paso a paso</summary><ol id="tts"></ol></details>
+   <small>Tiempo estimado a paso normal; puede aumentar en el receso por la afluencia de alumnos.</small>
+   <button class="pri" id="ttv" type="button">Ver el recorrido en Street View</button>
+   <button class="sec" id="ttl" type="button">Limpiar ruta</button>
+  </div>
+ </div>
+ <div id="res" class="glass"></div>
+</div>
+
+<div class="zc glass">
+ <button id="zi" aria-label="Acercar">+</button>
+ <button id="zo" aria-label="Alejar">−</button>
+ <button id="zr" aria-label="Restablecer vista"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="1.6"/></svg></button>
+</div>
+
+<div class="bd" id="bd"></div>
+<aside class="dr glass" id="dr"><h3>CBTis 123<small>Santa Lucía del Camino, Oaxaca</small></h3><div class="aul"><h4>Ver aulas <span id="aulc"></span></h4><div class="seg2"><button data-f="b" class="on">Planta Baja</button><button data-f="a">Planta Alta</button></div><div id="aulg"></div></div><div id="list"></div></aside>
+
+<div id="rosa" class="glass" role="img" aria-label="Rosa de los vientos"><svg viewBox="-48 -48 96 96"><circle r="31" fill="none" stroke="#cfd5dc" stroke-width="1"/>
+ <path d="M0-22 4-4 22 0 4 4 0 22-4 4-22 0-4-4Z" transform="rotate(45)" fill="#9aa6b8"/>
+ <path d="M0-30 5-5 30 0 5 5 0 30-5 5-30 0-5-5Z" fill="#1c2633"/><path d="M0-30 5-5-5-5Z" fill="#d64545"/><circle r="2.2" fill="#fff"/>
+ <g font-family="system-ui,sans-serif" font-size="11" font-weight="800" text-anchor="middle" dominant-baseline="central" fill="#1c2633"><text y="-39" fill="#d64545">N</text><text y="39">S</text><text x="39">E</text><text x="-39">O</text></g></svg></div>
+<div id="mi">
+ <button id="lgb" class="lgb glass" type="button" aria-expanded="false" aria-controls="lgp"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1.3"/><circle cx="4.5" cy="12" r="1.3"/><circle cx="4.5" cy="18" r="1.3"/></svg><span>Leyenda</span></button>
+ <div id="esc2" class="glass" hidden><div id="escb"></div><span id="esct"></span></div>
+ <div id="lgp" class="lgp glass" hidden>
+  <h4>Edificios y áreas</h4>
+  <ul>
+   <li><i class="sw" style="background:#c9d3df"></i>Aulas</li>
+   <li><i class="sw" style="background:#aebccf"></i>Administración</li>
+   <li><i class="sw" style="background:#c3cad8"></i>Laboratorios y aulas con laboratorio</li>
+   <li><i class="sw" style="background:#d8d5cd"></i>Talleres</li>
+   <li><i class="sw" style="background:#d5dcd9"></i>Biblioteca, emprendimiento y COMA / CDEX</li>
+   <li><i class="sw" style="background:#e9ebee"></i>Servicios (cafetería, sanitarios) y estacionamientos</li>
+   <li><i class="sw" style="background:#ffe3d3"></i>Intendencia</li>
+   <li><i class="sw" style="background:#a3acb8"></i>Canchas (voleibol y basquetbol)</li>
+   <li><i class="sw" style="background:#e08a48"></i>Plaza cívica</li>
+   <li><i class="sw" style="background:#a9bcd2"></i>Acceso principal</li>
+   <li><i class="sw" style="background:#8fb0d4"></i>Cancha de fútbol (fuera del plantel)</li>
+   <li><i class="sw" style="background:#cbd9c6"></i>Áreas verdes</li>
+   <li><i class="sw ln"></i>Muro perimetral del plantel</li>
+  </ul>
+  <h4>Símbolos</h4>
+  <ul>
+   <li><i class="ci">A</i>Letra del edificio (la misma que en las tarjetas)</li>
+   <li><i class="pl">+</i>Punto de reunión</li>
+   <li><svg class="ic" viewBox="0 0 24 18"><rect x=".5" y=".5" width="23" height="17" rx="2" fill="#c8c2b8" stroke="#8d8576"/><path d="M1 4h22M1 7.5h22M1 11h22M1 14.5h22" stroke="#8d8576" stroke-width=".8"/></svg>Escaleras (entre el nivel norte y el sur)</li>
+   <li><svg class="ic" viewBox="0 0 24 18"><path d="M1 17V1l22 16Z" fill="#d9d4ca" stroke="#8d8576"/></svg>Rampa</li>
+   <li><svg class="ic" viewBox="0 0 24 18"><circle cx="12" cy="9" r="8" fill="#1f3a5f"/><path d="M5 9c2-3.5 5-5 7-5s5 1.500 7 5c-2 3.500-5 5-7 5s-5-1.500-7-5Z" fill="none" stroke="#fff"/><circle cx="12" cy="9" r="2" fill="#fff"/></svg>Inicio de la vista de calle</li>
+   <li><svg class="ic" viewBox="0 0 24 18"><path d="M1 14C8 14 9 4 15 4h8" fill="none" stroke="#1f3a5f" stroke-width="2.200" stroke-dasharray="4 3"/></svg>Ruta trazada</li>
+   <li><i class="dt" style="background:#2e9d57"></i>Salida de la ruta &nbsp;<i class="dt" style="background:#d64545"></i>Llegada</li>
+  </ul>
+  <small>Arriba del plano es el norte (ver rosa de los vientos).</small>
+ </div>
+</div>
+<section class="sheet glass" id="sheet">
+ <i class="hd"></i>
+ <div class="head"><b id="cb"></b><div><h2 id="cn"></h2><span class="tag" id="ct"></span></div><button class="ib" id="cx" aria-label="Cerrar"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+ <div class="seg" id="fl"><button data-f="b">Planta Baja</button><button data-f="a">Planta Alta</button></div>
+ <p id="cf"></p><p id="cd"></p>
+ <button class="pri" id="ctr">Centrar vista</button>
+ <button class="sec" id="svz" hidden><svg viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><span id="svzt">Ver vista del aula</span></button>
+ <button class="sec" id="rt2b">Trazar ruta hasta aquí (plano 2D)</button>
+ <button class="sec" id="svh">¿Cómo llegar? (recorrido 3D)</button>
+</section>
+
+<button class="svb glass" id="svb"><svg viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>Vista de calle</button>
+<div id="sv" aria-hidden="true">
+ <div class="ph" id="p0"></div><div class="ph" id="p1"></div>
+ <div class="sv-top"><div><small>Vista de calle · CBTis 123</small><h2><span class="ub">Ubicación:</span> <span id="svt"></span></h2><select id="svsel" aria-label="Ir a un lugar"></select><select id="svdest" aria-label="¿Cómo llegar a…?"></select><div id="svr" class="rt" hidden></div></div><button class="sv-x" id="svx"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>Cerrar / Volver al plano</button></div>
+ <button class="nv" id="nf" aria-label="Adelante" title="Adelante"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button><button class="nv" id="nb" aria-label="Atrás" title="Atrás"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg></button><button class="nv" id="nl" aria-label="Izquierda" title="Izquierda"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button><button class="nv" id="nr" aria-label="Derecha" title="Derecha"><svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
+ <button class="nv sm" id="sm" aria-label="Cambiar entre modo día y noche"><svg id="isun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><svg id="imoon" viewBox="0 0 24 24" hidden><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg><span id="smt">Día</span></button>
+ <button class="nv pb" id="pb" aria-label="Mis fotos"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13.5" r="3.5"/></svg><span>Mis fotos</span></button>
+ <div id="vh" hidden>Arrastra para mirar alrededor · pellizca para acercar · doble toque para restablecer</div>
+ <div id="pm" hidden><b id="pmt"></b><button id="pg">Elegir foto de la galería</button><button id="pc">Tomar foto ahora</button><button id="pmq">Quitar mi foto de este lugar</button><button id="pmn">Ir al siguiente lugar sin foto</button><button id="pz">Descargar mis fotos (.zip)</button><small>Consejo: puedes usar fotos panorámicas; se giran arrastrando.</small><small id="pst"></small></div>
+ <input type="file" id="pf" accept="image/*" hidden><input type="file" id="pfc" accept="image/*" capture="environment" hidden>
+</div>
+<button class="svb t3 glass" id="t3b"><svg viewBox="0 0 24 24"><path d="M12 2l9 5v10l-9 5-9-5V7zM3 7l9 5 9-5M12 12v10"/></svg>Recorrido 3D</button>
+<div id="td" aria-hidden="true"><canvas id="tc"></canvas>
+ <div class="sv-top"><div><small>Recorrido 3D · CBTis 123</small><h2><span class="ub">Ubicación:</span> <span id="tdt"></span></h2><select id="tdsel" aria-label="¿Cómo llegar a…?"></select><button class="sv-x" id="tgo" hidden>Llévame hasta allá</button><div id="tdr" class="rt" hidden></div></div><button class="sv-x" id="tdx"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>Cerrar / Volver al plano</button></div>
+ <button class="nv" id="tf" aria-label="Avanzar"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button><button class="nv" id="tb" aria-label="Retroceder"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg></button><button class="nv" id="tl" aria-label="Girar a la izquierda"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button><button class="nv" id="tr" aria-label="Girar a la derecha"><svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
+ <button class="nv" id="tp"><svg id="tpi" viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg><span id="tpt">Recorrido automático</span></button>
+</div>
+<script>
+// =====================================================================
+//  LISTADO DE FOTOS QUE USA LA APP
+//  Estructura (junto a index.html):
+//      images/            <- foto de DÍA de cada lugar:    images/entrada.jpg
+//      images/noche/      <- foto de NOCHE (opcional):     images/noche/entrada.jpg
+//  Formato .jpg, nombres EXACTOS (minúsculas, sin espacios ni acentos; GitHub distingue mayúsculas de minúsculas).
+//  Si falta la foto de noche, se usa la de día oscurecida. Si falta la de día, se muestra una imagen provisional.
+//  Con "Mis fotos" (en Vista de calle) también puedes cargar fotos desde el teléfono y descargar un .zip con estos nombres.
+//
+//    ARCHIVO .jpg ..................... LUGAR
+//    calle.jpg......................... Calle · Av. Lázaro Cárdenas
+//    entrada.jpg....................... Entrada principal
+//    estacionamiento.jpg............... Estacionamiento sur
+//    sanitarios-p.jpg.................. Sanitarios P
+//    frente-a.jpg...................... Frente al Edificio A (Administrativo)
+//    cruce-c.jpg....................... Cruce frente al Edificio C
+//    pasillo-a.jpg..................... Pasillo Edificio A
+//    sanitarios-enie.jpg............... Sanitarios Ñ
+//    plaza.jpg......................... Plaza cívica
+//    pasillo-e.jpg..................... Pasillo Edificio E
+//    coma-cdex.jpg..................... Frente a Intendencia, COMA y CDEX (Edificio L)
+//    taller-auto.jpg................... Taller de Mtto. Automotriz y Almacén
+//    edificio-k.jpg.................... Edificio K (Aulas A23–A26)
+//    taller-servicios.jpg.............. Taller de Servicios Generales
+//    pasillo-c.jpg..................... Pasillo Edificio C
+//    pasillo-d.jpg..................... Pasillo Edificio D
+//    pasillo-j.jpg..................... Pasillo Edificio J (Cómputo e inglés)
+//    cafeteria.jpg..................... Cafetería
+//    cancha-futbol.jpg................. Cancha de fútbol
+//    pasillo-b.jpg..................... Pasillo Edificio B
+//    cancha-voleibol.jpg............... Cancha de voleibol
+//    taller-mecatronica.jpg............ Taller de Mecatrónica
+//    taller-electromecanica.jpg........ Taller de Electromecánica
+//    biblioteca-h.jpg.................. Edificio H · Biblioteca
+//    pasillo-i.jpg..................... Edificio I (Aulas A19–A22)
+//    lab-computo-3.jpg................. Laboratorio de cómputo 3 (Edificio O)
+//    estacionamiento-g.jpg............. Estacionamiento G
+//    cancha-basquetbol.jpg............. Cancha de basquetbol
+//    pasillo-entrada.jpg............... Pasillo de la entrada
+//    escaleras-c.jpg................... Escaleras del Edificio C (suben a Planta Alta)
+//    c-planta-alta.jpg................. Edificio C · Planta Alta (pasillo) (interior)
+//    escaleras-d.jpg................... Escaleras del Edificio D (suben a Planta Alta)
+//    d-planta-alta.jpg................. Edificio D · Planta Alta (pasillo) (interior)
+//    d-planta-baja.jpg................. Edificio D · Planta Baja (CAED y laboratorios)
+//    escaleras-e.jpg................... Escaleras del Edificio E (suben a Planta Alta)
+//    e-planta-alta.jpg................. Edificio E · Planta Alta (pasillo) (interior)
+//    escaleras-k.jpg................... Escaleras del Edificio K (suben a Planta Alta)
+//    k-planta-alta.jpg................. Edificio K · Planta Alta (pasillo) (interior)
+//    aula-a1.jpg....................... Aula A1 · Edificio C · Planta Baja (interior)
+//    aula-a2.jpg....................... Aula A2 · Edificio C · Planta Baja (interior)
+//    aula-a3.jpg....................... Aula A3 · Edificio C · Planta Baja (interior)
+//    aula-a4.jpg....................... Aula A4 · Edificio C · Planta Baja (interior)
+//    aula-a5.jpg....................... Aula A5 · Edificio C · Planta Alta (interior)
+//    aula-a6.jpg....................... Aula A6 · Edificio C · Planta Alta (interior)
+//    aula-a7.jpg....................... Aula A7 · Edificio D · Planta Alta (interior)
+//    aula-a8.jpg....................... Aula A8 · Edificio D · Planta Alta (interior)
+//    aula-a9.jpg....................... Aula A9 · Edificio D · Planta Alta (interior)
+//    aula-a10.jpg...................... Aula A10 · Edificio E · Planta Baja (interior)
+//    aula-a11.jpg...................... Aula A11 · Edificio E · Planta Baja (interior)
+//    aula-a12.jpg...................... Aula A12 · Edificio E · Planta Baja (interior)
+//    aula-a13.jpg...................... Aula A13 · Edificio E · Planta Alta (interior)
+//    aula-a14.jpg...................... Aula A14 · Edificio E · Planta Alta (interior)
+//    aula-a15.jpg...................... Aula A15 · Edificio E · Planta Alta (interior)
+//    aula-a16.jpg...................... Aula A16 · Edificio J · Planta Baja (interior)
+//    aula-a17.jpg...................... Aula A17 · Edificio B · Planta Baja (interior)
+//    aula-a18.jpg...................... Aula A18 · Edificio B · Planta Baja (interior)
+//    aula-a19.jpg...................... Aula A19 · Edificio I · Planta Baja (interior)
+//    aula-a20.jpg...................... Aula A20 · Edificio I · Planta Baja (interior)
+//    aula-a21.jpg...................... Aula A21 · Edificio I · Planta Baja (interior)
+//    aula-a22.jpg...................... Aula A22 · Edificio I · Planta Baja (interior)
+//    aula-a23.jpg...................... Aula A23 · Edificio K · Planta Baja (interior)
+//    aula-a24.jpg...................... Aula A24 · Edificio K · Planta Baja (interior)
+//    aula-a25.jpg...................... Aula A25 · Edificio K · Planta Alta (interior)
+//    aula-a26.jpg...................... Aula A26 · Edificio K · Planta Alta (interior)
+// =====================================================================
+
+// ---------------------------------------------------------------------
+//  AJUSTES DEL MAPA (edita estos dos valores)
+//  UNIDADES_POR_METRO: cuántas unidades del plano equivalen a 1 metro real (por ejemplo 7).
+//      Mientras sea null no se muestra la barra de escala y los tiempos de recorrido usan 7 como valor aproximado.
+//      Cómo calcularlo: mide en el plantel un largo real (p. ej. el Edificio C, en metros) y divide el largo de ese
+//      edificio en el plano (su ancho en unidades, ver 'g' en Z) entre esos metros.
+//  NORTE_EN_PLANO: grados, en sentido horario, que está girado el Norte respecto a "arriba" del plano.
+//      0 = el norte está arriba (como se asume ahora); 45 = el norte apunta hacia arriba a la derecha, etc.
+// ---------------------------------------------------------------------
+const UNIDADES_POR_METRO=null,NORTE_EN_PLANO=0;
+
+// Datos editables. g = rectángulos [x, y, ancho, alto] en coordenadas del croquis · p = contenido por planta · k = palabras clave
+const FN={b:'Planta Baja',a:'Planta Alta'},NS='http://www.w3.org/2000/svg';
+const $=s=>document.querySelector(s),svg=$('#map'),vp=$('#vp'),sheet=$('#sheet'),res=$('#res'),inp=$('#q');
+const W=1370,H=1230,clamp=k=>Math.max(.12,Math.min(6,k)),mobile=()=>innerWidth<=760;
+let X=0,Y=0,K=1,TX=0,TY=0,TK=1,run=0,last=0,cur=null,fl='b',onVista=null;
+const mk=(t,a,p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);p.appendChild(e);return e};
+const AU='#c9d3df',TA='#d8d5cd',SV='#d5dcd9',DP='#a3acb8',ES='#e9ebee';
+// Leyendas dentro de los bloques: zona -> [[núm. de rectángulo, [líneas de texto], tamaño de letra, girar 90°]]
+const ETQ={auto:[[0,['Taller de Mtto.','Automotriz'],17],[1,['Almacén'],15]],L:[[0,['INTEN-','DENCIA'],9.5,0,1]],comacdex:[[0,['COMA'],12,0,1],[1,['CDEX'],12,0,1]],papeleria:[[0,['PAPELERÍA'],6.8,0,1]]};
+const DESC={
+"A": "Edificio administrativo del plantel. En planta baja se ubican Servicios Escolares, Gestión Educativa, Vinculación y la Sala Audiovisual; en planta alta, la Dirección, la Subdirección Docentes y el área Administrativa. Es el primer edificio que se encuentra al ingresar por la entrada principal.",
+"B": "Edificio de un piso que alberga las aulas A17 y A18. Se ubica al sur de la cancha de voleibol y se accede por el pasillo central del plantel.",
+"C": "Edificio de dos plantas. En planta baja se encuentran las aulas A1, A2, A3 y A4; en planta alta, las aulas A5 y A6, el Taller de Logística y el Laboratorio de cómputo 1. Cuenta con un paso peatonal central y escaleras de acceso a la planta alta.",
+"D": "Edificio de dos plantas. En planta baja se ubican el CAED y los laboratorios de Química y de Física; en planta alta, las aulas A7, A8 y A9 y el Laboratorio de cómputo 2.",
+"E": "Edificio de dos plantas con las aulas A10, A11 y A12 en planta baja y las aulas A13, A14 y A15 en planta alta. Aloja además la administración de recursos humanos.",
+"G": "Estacionamiento de vehículos ubicado en la zona norte del plantel, a un costado del Edificio H (Biblioteca).",
+"H": "Edificio de un piso que reúne el aula de emprendimiento, el aula EMP2 y la biblioteca, espacio de consulta, lectura y estudio para la comunidad estudiantil.",
+"I": "Edificio de un piso con las aulas A19, A20, A21 y A22, ubicado al poniente de la biblioteca.",
+"J": "Edificio de un solo piso dedicado a cómputo e inglés. La fila norte aloja el Taller de cómputo 2 y el aula A16; la fila sur, el Taller de cómputo 1 y los laboratorios de inglés 1 y 2.",
+"K": "Mitad izquierda del edificio K/N, de dos plantas: aulas A23 y A24 en planta baja y aulas A25 y A26 en planta alta.",
+"L": "Área y bodega del personal de intendencia, donde se resguardan los materiales y el equipo de limpieza y mantenimiento del plantel.",
+"comacdex": "Módulo de oficinas de COMA (parte superior) y CDEX (parte inferior), de un solo piso, ubicado debajo del almacén del Taller de Mtto. Automotriz.",
+"electro": "Taller de Electromecánica. Espacio de prácticas para la formación técnica en instalaciones eléctricas, circuitos, motores y sistemas de control.",
+"M": "Taller de Mecatrónica. Espacio de prácticas donde el alumnado integra mecánica, electrónica, neumática y automatización en proyectos de la especialidad.",
+"auto": "Taller de Mantenimiento Automotriz. En él se realizan prácticas de diagnóstico y de mantenimiento preventivo y correctivo de vehículos: motor, frenos, suspensión y sistema eléctrico. Junto a él se encuentra el Almacén, donde se resguardan herramientas, equipo y refacciones.",
+"N": "Mitad derecha del edificio K/N, de dos plantas: Taller de Servicios Generales en planta baja y aulas-taller con almacén en planta alta.",
+"O": "Laboratorio de cómputo 3. Equipo de cómputo para clases de informática, prácticas de programación y actividades académicas de apoyo.",
+"P": "Sanitarios para alumnado y personal, ubicados junto a la entrada principal.",
+"Ñ": "Sanitarios para alumnado y personal, ubicados en el extremo este del plantel, junto al Edificio A.",
+"cafe": "Cafetería del plantel: servicio de alimentos y bebidas para alumnado, docentes y personal, principalmente durante el receso. Se encuentra en el nivel inferior del plantel; se llega por las escaleras o la rampa que bajan desde el pasillo central.",
+"plaza": "Plaza cívica. Espacio principal para ceremonias cívicas, honores a la bandera, eventos institucionales y reuniones generales. Cuenta con asta bandera y escenario.",
+"futbol": "Cancha de fútbol de tierra, en una zona separada del plantel y en un nivel más bajo que las aulas. Se utiliza para educación física y actividades deportivas. Para llegar hay que salir por el Acceso principal y rodear por la Av. Lázaro Cárdenas.",
+"basket": "Cancha de basquetbol con canastas, destinada a clases de educación física, entrenamientos y torneos escolares.",
+"cancha": "Cancha de voleibol ubicada al norte del Edificio B, en el centro del plantel. Se llega por el pasillo que queda a la izquierda de dicho edificio. Se emplea en educación física y actividades deportivas.",
+"puestos": "Tres puestos o casetas de servicio ubicados antes del acceso, a la izquierda de la entrada principal.",
+"papeleria": "Papelería: venta de útiles escolares, copias e impresiones. Se encuentra junto a la Cafetería, del lado del Taller de Mecatrónica.",
+"banos": "Sanitarios ubicados junto a la biblioteca, del lado derecho.",
+"salida": "Salida de vehículos del estacionamiento, en la esquina derecha del muro norte. La reja permanece cerrada: para salir se requiere la tarjeta de trabajo y el registro en la caseta.",
+"poli": "Caseta de vigilancia del personal de seguridad, a la izquierda al entrar por la entrada estudiantil.",
+"acceso": "Entrada estudiantil sobre Av. Lázaro Cárdenas. El ingreso es con credencial estudiantil, a través del arco detector de metales. A la izquierda, al entrar, se encuentra la caseta de vigilancia.",
+"estS": "Estacionamiento sur, frente al acceso principal, sobre Av. Lázaro Cárdenas.",
+"estN": "Estacionamiento norte, ubicado al norte del plantel, entre la biblioteca y el muro perimetral."
+};   // descripciones de las tarjetas (una por zona)
+const Z=[
+ ['A','Edificio A · Administrativo','A · Administrativo','Administración','#aebccf',[[688,1157,398,48]],'Oficinas administrativas del plantel.',{b:'Servicios escolares, Gestión educativa, Vinculación y Sala audiovisual',a:'Dirección, Subdirección docentes y Administrativos'}],
+ ['B','Edificio B','B','Aulas',AU,[[580,585,106,48]],'Aulas A17 y A18.',0,'a17 a18 aulas'],
+ ['C','Edificio C','C · Aulas A1–A6','Aulas y taller',AU,[[447,1037,348,53]],'Aulas A1 a A6, Taller de Logística y laboratorio de cómputo.',{b:'Aulas A1, A2, A3 y A4',a:'Aulas A5 y A6, Taller de Logística y Laboratorio de cómputo 1'}],
+ ['D','Edificio D','D · Aulas y labs','Aulas y laboratorios','#c3cad8',[[447,920,348,48]],'Aulas A7 a A9 y laboratorios.',{b:'Laboratorio de Química y de Física',a:'Aulas A7, A8 y A9 y Laboratorio de cómputo 2'}],
+ ['E','Edificio E','E · A10–A15','Aulas',AU,[[897,895,215,50]],'Aulas A10 a A15 y administración de recursos humanos.',{b:'Aulas A10, A11 y A12',a:'Aulas A13, A14 y A15'}],
+ ['G','Estacionamiento G','G','Estacionamiento',ES,[[928,278,100,70]]],
+ ['H','Edificio H · Biblioteca','H · Biblioteca','Biblioteca y emprendimiento',SV,[[580,277,292,45]],'Aula de emprendimiento, EMP2 y biblioteca.',0,'emprendimiento emp2 biblioteca consultorio'],
+ ['I','Edificio I','I · A19–A22','Aulas',AU,[[260,300,268,48]],'Aulas A19 a A22.',0,'a19 a20 a21 a22 aulas'],
+ ['J','Edificio J · Cómputo e inglés','J','Talleres y laboratorios','#c3cad8',[[580,725,160,46],[580,820,215,52]],'Un solo piso. Fila norte: taller de cómputo 2 y aula A16. Fila sur (laboratorios): taller de cómputo 1 y laboratorios de inglés 1 y 2.',0,'a16 aula computo taller laboratorio ingles'],
+ ['K','Edificio K','K','Aulas',AU,[[1085,510,160,58]],'Mitad izquierda del edificio K/N (dos plantas): aulas A23 a A26.',{b:'Aulas A23 y A24',a:'Aulas A25 y A26'},'aulas'],
+ ['L','Intendencia','Intendencia','Servicios','#ffe3d3',[[1152,700,54,80]],'Intendencia: área y bodega de los intendentes. Es un edificio parecido a la cafetería, pero más pequeño.',0,'intendentes intendencia limpieza bodega'],
+ ['comacdex','COMA y CDEX','COMA · CDEX','Servicios',SV,[[1010,797,54,39],[1010,836,54,39]],'COMA (arriba) y CDEX (abajo). Edificio de un piso, alargado en vertical, justo debajo del almacén del taller automotriz.',0,'coma cdex'], ['electro','Taller de Electromecánica','Electromecánica','Talleres',TA,[[793,372,213,190]]],
+ ['M','Taller de Mecatrónica','M · Mecatrónica','Talleres',TA,[[128,372,215,190]]],
+ ['auto','Taller de Mtto. Automotriz y Almacén','Mtto. Automotriz','Talleres',TA,[[793,587,170,152],[963,657,95,80]],'',0,'almacen'],
+ ['N','Taller de Servicios Generales','N · Servicios','Aulas y taller',AU,[[1245,510,160,58]],'Mitad derecha del edificio K/N (dos plantas): Taller de Servicios Generales.',{b:'Taller de Servicios Generales',a:'Aulas-taller y almacén'}],
+ ['O','Laboratorio de cómputo 3','O','Laboratorios','#c3cad8',[[420,205,135,48]],'',0,'lc3 l.c.3'],
+ ['P','Sanitarios P','P','Servicios',ES,[[528,1205,52,48]]],
+ ['Ñ','Sanitarios Ñ','Ñ','Servicios',ES,[[1112,1155,58,48]]],
+ ['cafe','Cafetería','Cafetería','Servicios','#ddd6c9',[[422,657,106,190]]],
+ ['plaza','Plaza cívica','Plaza cívica','Espacio común','#e08a48',[[872,968,213,175]]],
+ ['futbol','Cancha de fútbol (fuera del plantel)','Cancha de fútbol','Fuera del plantel','#8fb0d4',[[48,635,347,495]],'Cancha de tierra, en una zona aparte del CBTis y en un nivel más bajo que las aulas.'],
+ ['basket','Cancha de basquetbol','Basquetbol','Deportes',DP,[[75,160,160,185]]],
+ ['cancha','Cancha de voleibol','Voleibol','Deportes',DP,[[475,395,238,170]],'Cancha de voleibol, al norte del edificio B. Se llega por el pasillo que queda a la izquierda del edificio.',0,'voleibol voleyball volleyball cancha central'],
+ ['puestos','Puestos (3 casetas)','Puestos','Servicios','#ffe0b3',[[500,1301,26,12],[534,1301,26,12],[568,1301,26,12]],'Tres casetas o puestos antes del acceso, a la izquierda de la entrada principal.'],
+ ['papeleria','Papelería','Papelería','Servicios','#ffe0b3',[[430,612,56,30]],'Papelería: útiles escolares, copias e impresiones. Está junto a la cafetería, del lado de Mecatrónica.',0,'papeleria copias fotocopias utiles escolares'],
+ ['banos','Baños (junto a la biblioteca)','WC','Servicios',ES,[[880,288,34,28]],'Baños: sanitarios junto a la biblioteca, del lado derecho.',0,'banos sanitarios wc mujeres hombres'],
+ ['salida','Salida de autos (estacionamiento)','SALIDA','Estacionamiento',ES,[[1030,203,40,87]],'Salida de los autos del estacionamiento, en la esquina derecha (muro norte). Reja cerrada: para salir se necesita la tarjeta de trabajo y registrarse en la caseta.',0,'salida autos coches estacionamiento puerta portón reja tarjeta trabajo registro'],
+ ['poli','Caseta del policía (vigilancia)','Policía','Servicios',ES,[[574,1262,24,18]],'Caseta pequeña de vigilancia para el policía, a la izquierda al entrar por la entrada estudiantil.',0,'policia vigilancia seguridad guardia caseta'],
+ ['acceso','Acceso principal','Acceso','Acceso','#a9bcd2',[[608,1225,100,80]],'Entrada estudiantil sobre Av. Lázaro Cárdenas: se entra con credencial estudiantil, pasando por el arco detector de metales. A la izquierda, al entrar, está la caseta del policía.',0,'entrada estudiantil credencial detector metales policia'],
+ ['estS','Estacionamiento sur','Estacionamiento','Estacionamiento',ES,[[715,1253,355,35]]],
+ ['estN','Estacionamiento norte','Estacionamiento','Estacionamiento',ES,[[633,185,270,70]]]
+].map(([id,n,l,t,c,g,d,p,k])=>({id,n,l,t,c,g,d:DESC[id]||d||'',p:p||null,k:k||''}));
+
+// ---- Aulas dentro de los bloques (croquis oficial) ----
+// i = número de rectángulo de la zona · f = filas: con 2 filas, la de arriba es PLANTA ALTA (PA) y la de abajo PLANTA BAJA (PB)
+const ROOMS={
+ A:[{i:0,f:[['Direc.','Subdir. Docentes','Admvos.'],['D. Educ.','Escolares','Vinc.','S. Audiov.']]}],
+ C:[{i:0,f:[['A5','A6','T. Logíst.','L.C.1'],['A4','A3','A2','A1']]}],
+ D:[{i:0,f:[['A7','A8','A9','L.C.2'],['CAED','L. Quím.','L. Física']]}],
+ E:[{i:0,f:[['A13','A14','A15'],['A10','A11','A12']]}],
+ K:[{i:0,f:[['A25','A26'],['A23','A24']]}],
+ I:[{i:0,f:[['A19','A20','A21','A22']]}],
+ B:[{i:0,f:[['A17','A18']]}],
+ H:[{i:0,f:[['A. Emprend.','EMP2','Bibliot.']]}],
+ J:[{i:0,f:[['T.C.2','A16']]},{i:1,f:[['T.C.1','L. ing. 1','L. ing. 2']]}]
+};
+
+// ---- Dibujo del mapa (estilo plano técnico) ----
+// Áreas verdes tomadas del croquis oficial (coordenadas del croquis x 1.44)
+[[182,112,255,95],[300,262,30,115],[498,240,52,135],[412,452,140,55],[413,545,150,22],[560,556,130,30],[296,595,100,38],[430,684,170,30],[440,598,115,22],[570,600,50,60],[311,684,120,30],[296,770,120,30],[560,718,48,70],[760,650,70,150],[740,342,125,12],[300,865,60,35],[410,850,70,52],[663,842,110,20],[672,342,60,60],[420,225,130,26],[298,408,28,35],[290,230,40,26],[560,790,90,12]].forEach(([x,y,w,h])=>mk('rect',{x:x*1.44,y:y*1.44,width:w*1.44,height:h*1.44,rx:3},$('#lw')));
+[[385,472],[600,535],[557,707],[557,812],[1040,322],[1075,607],[633,1155],[1240,385]].forEach(([x,y])=>{
+ mk('rect',{x:x-18,y:y-18,width:36,height:36,rx:3,fill:'#5b8a6a'},$('#pr'));
+ mk('path',{d:`M${x-10} ${y}H${x+10}M${x} ${y-10}V${y+10}`,stroke:'#fff','stroke-width':3},$('#pr'))});
+Z.forEach(z=>{
+ const g=mk('g',{class:'z',id:'z-'+z.id},$('#zs'));
+ const ext=!/Deportes|Estacionamiento|Espacio|Acceso|Fuera/.test(z.t),dz=z.p?9:5;   // volumen: sombra lateral (más alta en edificios de 2 plantas) y techo claro
+ if(ext)z.g.forEach(([x,y,w,h])=>mk('rect',{class:'ex',x:x+dz*.7,y:y+dz,width:w,height:h,rx:2},g));
+ z.g.forEach(([x,y,w,h])=>mk('rect',{x,y,width:w,height:h,rx:2,fill:z.c},g));
+ if(ext)z.g.forEach(([x,y,w,h])=>w>16&&h>16&&mk('rect',{class:'rf',x:x+4,y:y+4,width:w-8,height:h-8,rx:2},g));
+ {const [fx,fy,fw,fh]=z.g[0];
+  if(z.id==='futbol'){mk('path',{class:'mk',d:`M${fx+20} ${fy+20}H${fx+fw-20}V${fy+fh-20}H${fx+20}ZM${fx+20} ${fy+fh/2}H${fx+fw-20}`},g);mk('circle',{class:'mk',cx:fx+fw/2,cy:fy+fh/2,r:48},g)}
+  if(z.t==='Estacionamiento'&&fw>=100){let d='';for(let i=1;i<fw/22;i++)d+=`M${fx+i*22} ${fy+4}V${fy+fh-4}`;mk('path',{class:'pk',d},g)}}
+ const [x,y,w,h]=z.g[0],L=z.l.toUpperCase(),big=h>=100;
+ if(z.t==='Deportes')mk('rect',{x:x+12,y:y+12,width:w-24,height:h-24,fill:'none',stroke:'#fff','stroke-width':2,'pointer-events':'none'},g);
+ if(!ROOMS[z.id]&&!ETQ[z.id]&&z.id!=='N'&&L.length*8<=w-8){   // N: estacionamiento del autobús escolar, sin leyenda
+  mk('text',{class:'lb',x:x+w/2,y:y+h/2+(big?-2:6),style:`font-size:${Math.min(17,Math.floor((w-12)/(L.length*.74+.6)))}px`},g).textContent=L;
+  if(big)mk('text',{class:'sb',x:x+w/2,y:y+h/2+18},g).textContent=z.t.toUpperCase();
+ }
+ (ETQ[z.id]||[]).forEach(([i,ls,fs,rot,ns])=>{const [ex,ey,ew,eh]=z.g[i],cx=ex+ew/2,cy=ey+eh/2;
+  ls.forEach((t,j)=>{const ty=cy+(j-(ls.length-1)/2)*fs*1.25,e=mk('text',{class:'lb etq',x:cx,y:ty,style:`font-size:${fs}px;dominant-baseline:central`+(ns?';letter-spacing:0;font-weight:700':'')},g);
+   if(rot)e.setAttribute('transform',`rotate(-90 ${cx} ${ty})`);e.textContent=t})});
+ (ROOMS[z.id]||[]).forEach(({i,f})=>{
+  const [rx,ry,rw,rh]=z.g[i],two=f.length>1,ox=two?20:0;
+  f.forEach((row,ri)=>{
+   const h1=rh/f.length,y1=ry+ri*h1,cw=(rw-ox)/row.length;
+   if(ri)mk('path',{class:'rl',d:`M${rx+ox} ${y1}H${rx+rw}`},g);
+   row.forEach((t,ci)=>{
+    if(ci)mk('path',{class:'rl',d:`M${rx+ox+ci*cw} ${y1}v${h1}`},g);
+    mk('text',{class:'rm',x:rx+ox+ci*cw+cw/2,y:y1+h1/2+.5},g).textContent=t});
+   if(two)mk('text',{class:'rt',x:rx+10,y:y1+h1/2+.5},g).textContent=ri?'PB':'PA'});
+  if(two)mk('path',{class:'rl',d:`M${rx+ox} ${ry}v${rh}`},g);
+ });
+ const x0=Math.min(...z.g.map(r=>r[0])),y0=Math.min(...z.g.map(r=>r[1]));
+ z.bb={x:x0,y:y0,w:Math.max(...z.g.map(r=>r[0]+r[2]))-x0,h:Math.max(...z.g.map(r=>r[1]+r[3]))-y0};
+ z.el=g;
+});
+
+// ---- Letras de los edificios según el croquis oficial (posiciones del croquis x 1.44; no interactivas) ----
+[['A',617,857],['B',492,426],['C',288,738],['D',285,657],['E',788,640],['F',688,438],['G',625,243],['H',505,176],['I',275,192],['J',458,492],['K',810,408],['L',819,476],['M',70,322],['N',925,408],['O',336,126],['P',347,853],['Ñ',795,860],['Q',570,595]].forEach(([t,x,y])=>{
+ const g=mk('g',{'pointer-events':'none'},$('#pr'));
+ mk('circle',{cx:x*1.44,cy:y*1.44,r:15,fill:'#1c2633',stroke:'#fff','stroke-width':2.5},g);
+ mk('text',{x:x*1.44,y:y*1.44+1,'text-anchor':'middle','dominant-baseline':'central','font-size':17,'font-weight':700,fill:'#fff','font-family':'system-ui,sans-serif'},g).textContent=t});
+
+// ---- Animación suave (suavizado exponencial independiente de los FPS) ----
+const apply=()=>{vp.setAttribute('transform',`translate(${X.toFixed(2)} ${Y.toFixed(2)}) scale(${K.toFixed(4)})`);onVista&&onVista()};
+const loop=t=>{const e=1-Math.exp(-Math.min(50,t-last)/90);last=t;
+ X+=(TX-X)*e;Y+=(TY-Y)*e;K+=(TK-K)*e;
+ if(Math.abs(TX-X)+Math.abs(TY-Y)<.3&&Math.abs(TK-K)<.0004){X=TX;Y=TY;K=TK;run=0}else run=requestAnimationFrame(loop);
+ apply()};
+const go=(x,y,k)=>{TX=x;TY=y;TK=k;if(!run){last=performance.now();run=requestAnimationFrame(loop)}};
+const sync=()=>{cancelAnimationFrame(run);run=0;TX=X;TY=Y;TK=K};
+const zoomT=(cx,cy,f)=>{const nk=clamp(TK*f),r=nk/TK;go(cx-(cx-TX)*r,cy-(cy-TY)*r,nk)};
+const zoomNow=(cx,cy,f)=>{const nk=clamp(K*f),r=nk/K;X=cx-(cx-X)*r;Y=cy-(cy-Y)*r;K=nk;apply()};
+const fit=()=>{const r=svg.getBoundingClientRect(),k=Math.min(r.width/W,r.height/H)*.94;return{k,x:(r.width-W*k)/2-45*k,y:(r.height-H*k)/2-140*k}};
+const reset=()=>{const f=fit();go(f.x,f.y,f.k)};
+
+// ---- Selección, bottom sheet y plantas ----
+function focusOn(id){
+ const z=Z.find(w=>w.id===id),bb=z.bb,r=svg.getBoundingClientRect(),m=mobile();
+ const L=m?0:410,T=84,B=r.height-(m?sheet.offsetHeight+28:0);
+ const k=clamp(Math.min((r.width-L)/(bb.w*1.7),(B-T)/(bb.h*2),2.4));
+ go(L+(r.width-L)/2-(bb.x+bb.w/2)*k,T+(B-T)/2-(bb.y+bb.h/2)*k,k);
+}
+function setFloor(f){
+ const z=Z.find(w=>w.id===cur);fl=f;
+ document.querySelectorAll('#fl button').forEach(b=>b.classList.toggle('on',b.dataset.f===f));
+ $('#cf').textContent=z&&z.p?`${FN[f]}: ${z.p[f]}`:'';
+}
+document.querySelectorAll('#fl button').forEach(b=>b.onclick=()=>setFloor(b.dataset.f));
+function select(id,f){
+ const z=Z.find(w=>w.id===id);if(!z)return;
+ document.querySelectorAll('.z.on').forEach(e=>e.classList.remove('on'));z.el.classList.add('on');
+ cur=id;$('#cb').textContent=z.id.length<2?z.id:'';$('#cb').style.background=z.c;$('#cn').textContent=z.n;$('#ct').textContent=z.t;$('#cd').textContent=z.d;
+ $('#fl').classList.toggle('show',!!z.p);setFloor(f||'b');updSV(id);
+ sheet.classList.add('show');
+ document.documentElement.style.setProperty('--sheet',mobile()?sheet.offsetHeight+'px':'0px');
+ focusOn(id);
+}
+function clear(){document.querySelectorAll('.z.on').forEach(e=>e.classList.remove('on'));sheet.classList.remove('show');document.documentElement.style.setProperty('--sheet','0px');cur=null}
+$('#cx').onclick=clear;$('#ctr').onclick=()=>cur&&focusOn(cur);
+
+// ---- Panel de ubicaciones ----
+const rowHTML=(z,sub)=>`<b style="background:${z.c}">${z.id.length<2?z.id:''}</b><div><span>${z.n}</span><small>${sub}</small></div>`;
+const openDr=o=>{$('#dr').classList.toggle('open',o);$('#bd').classList.toggle('open',o)};
+Z.forEach(z=>{const b=document.createElement('button');b.className='row';b.innerHTML=rowHTML(z,z.t+(z.p?' · 2 plantas':''));b.onclick=()=>{openDr(false);select(z.id)};$('#list').appendChild(b)});
+$('#mb').onclick=()=>openDr(true);$('#bd').onclick=()=>openDr(false);
+
+// ---- Buscador en tiempo real ----
+const norm=s=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+const has=(t,w)=>/^([a-zñ]\d*|\d+)$/.test(w)?new RegExp('\\b'+w+'\\b').test(t):t.includes(w);
+function hits(s){
+ s=norm(s.trim()).replace(/aulas?\s*(\d+)/g,'a$1');if(!s)return[];
+ const tk=s.split(/\s+/),out=[];
+ Z.forEach(z=>{
+  if(tk.every(w=>has(norm([z.n,z.l,z.t,z.k].join(' ')),w))){out.push({z,f:null});return}
+  if(z.p)['b','a'].forEach(f=>{if(tk.every(w=>has(norm(z.p[f]),w)))out.push({z,f})});
+ });
+ return out;
+}
+const pick=x=>{res.classList.remove('open');inp.blur();select(x.z.id,x.f)};
+function render(){
+ const v=inp.value.trim(),h=hits(v);
+ $('#qx').style.display=v?'grid':'none';res.classList.toggle('open',!!v);res.innerHTML=h.length?'':'<p>Sin resultados</p>';
+ h.slice(0,8).forEach(x=>{const b=document.createElement('button');b.className='row';b.innerHTML=rowHTML(x.z,x.f?FN[x.f]:x.z.t);b.onclick=()=>pick(x);res.appendChild(b)});
+}
+inp.oninput=render;inp.onfocus=()=>inp.value&&render();
+inp.onkeydown=e=>{
+ if(e.key==='Enter'){const h=hits(inp.value);if(h[0])pick(h[0])}
+ else if(e.key==='Escape'){inp.value='';render();inp.blur()}
+};
+$('#qx').onclick=()=>{inp.value='';render();inp.focus()};
+document.addEventListener('pointerdown',e=>{if(!e.target.closest('.top'))res.classList.remove('open')});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')openDr(false)});
+
+// ---- Zoom (botones y rueda) ----
+const mid=()=>{const r=svg.getBoundingClientRect();return[r.width/2,r.height/2]};
+$('#zi').onclick=()=>zoomT(...mid(),1.5);
+$('#zo').onclick=()=>zoomT(...mid(),1/1.5);
+$('#zr').onclick=()=>{clear();reset()};
+svg.addEventListener('wheel',e=>{e.preventDefault();const r=svg.getBoundingClientRect();
+ zoomT(e.clientX-r.left,e.clientY-r.top,Math.exp(-e.deltaY*.0016))},{passive:false});
+
+// ---- Pan con inercia y pinch (táctil y mouse) ----
+const pts=new Map();let moved=0,lastD=0,vx=0,vy=0,lt=0;
+svg.addEventListener('pointerdown',e=>{svg.setPointerCapture(e.pointerId);pts.set(e.pointerId,[e.clientX,e.clientY]);moved=0;lastD=0;vx=vy=0;lt=performance.now();sync()});
+svg.addEventListener('pointermove',e=>{
+ if(!pts.has(e.pointerId))return;
+ const p=pts.get(e.pointerId),r=svg.getBoundingClientRect(),now=performance.now();
+ if(pts.size===1){const dx=e.clientX-p[0],dy=e.clientY-p[1],dt=Math.max(8,now-lt);
+  moved+=Math.abs(dx)+Math.abs(dy);X+=dx;Y+=dy;vx=dx/dt;vy=dy/dt;lt=now;apply()}
+ pts.set(e.pointerId,[e.clientX,e.clientY]);
+ if(pts.size===2){const [a,b]=[...pts.values()],d=Math.hypot(a[0]-b[0],a[1]-b[1]);moved+=10;
+  if(lastD)zoomNow((a[0]+b[0])/2-r.left,(a[1]+b[1])/2-r.top,d/lastD);lastD=d}
+});
+svg.addEventListener('pointerup',e=>{
+ const single=pts.size===1;
+ if(single&&moved<6){const t=document.elementFromPoint(e.clientX,e.clientY),z=t&&t.closest&&t.closest('.z');
+  if(t&&t.closest&&t.closest('.mk'))openSV(SV_INICIO);else if(z)select(z.id.slice(2));else if(cur)clear();sync()}
+ else if(single&&performance.now()-lt<80&&Math.hypot(vx,vy)>.15)go(X+vx*220,Y+vy*220,K);
+ else sync();
+ pts.delete(e.pointerId);lastD=0;
+});
+svg.addEventListener('pointercancel',e=>{pts.delete(e.pointerId);lastD=0;sync()});
+addEventListener('resize',()=>cur?select(cur,fl):reset());
+
+// ---- Inicio con zoom suave de entrada ----
+const f0=fit();X=TX=f0.x+W*f0.k*.1;Y=TY=f0.y+H*f0.k*.1;K=TK=f0.k*.8;apply();go(f0.x,f0.y,f0.k);
+
+// =====================================================================
+//  VISTA DE CALLE · RECORRIDO VIRTUAL COMPLETO (día / noche)
+//
+//  DÓNDE PONER TUS FOTOS
+//   1) Junto a este archivo HTML crea dos carpetas:  images/   y   images/noche/
+//   2) En cada nodo de la lista NODOS (más abajo) cambia los nombres:
+//        imgDia   : 'images/NOMBRE-DE-TU-FOTO-DE-DIA.jpg'
+//        imgNoche : 'images/noche/NOMBRE-DE-TU-FOTO-DE-NOCHE.jpg'
+//   3) Si todavía NO tienes la foto de noche (o el archivo no existe), el visor usa
+//      automáticamente la foto de día con un efecto oscuro. Si tampoco existe la de día,
+//      muestra una imagen provisional que indica la ruta esperada.
+//
+//  CÓMO FUNCIONAN LOS NODOS (cada nodo = un punto fotografiado)
+//   titulo : nombre que se muestra en "Ubicación: ..."
+//   xy     : posición del punto en el plano [x, y] (coordenadas del croquis)
+//   zona   : id de la zona del plano relacionada (solo informativo; null si no aplica)
+//   f / b / l / r : nodo al que lleva la flecha Adelante / Atrás / Izquierda / Derecha
+//                   (escribe el id de otro nodo, o null si no hay camino en esa dirección)
+//
+//  PARA AGREGAR UN LUGAR NUEVO: copia una línea de NODOS, cambia el id, el título, las fotos
+//  y enlázalo desde los nodos vecinos usando f / b / l / r. El menú "Ir a..." se actualiza solo.
+// =====================================================================
+const SV_INICIO='nodo_calle';   // nodo con el que abre el visor desde el marcador del plano
+const NODOS={
+ nodo_calle:{titulo:'Calle · Av. Lázaro Cárdenas',imgDia:'images/calle.jpg',imgNoche:'images/noche/calle.jpg',xy:[658,1340],zona:null,f:'nodo_entrada',b:null,l:null,r:null},
+ nodo_entrada:{titulo:'Entrada principal',imgDia:'images/entrada.jpg',imgNoche:'images/noche/entrada.jpg',xy:[658,1262],zona:'acceso',f:'nodo_frente_a',b:'nodo_calle',l:'nodo_sanitarios_p',r:'nodo_estacionamiento'},
+ nodo_estacionamiento:{titulo:'Estacionamiento sur',imgDia:'images/estacionamiento.jpg',imgNoche:'images/noche/estacionamiento.jpg',xy:[890,1270],zona:'estS',f:null,b:null,l:'nodo_entrada',r:null},
+ nodo_sanitarios_p:{titulo:'Sanitarios P',imgDia:'images/sanitarios-p.jpg',imgNoche:'images/noche/sanitarios-p.jpg',xy:[555,1262],zona:'P',f:null,b:null,l:null,r:'nodo_entrada'},
+ nodo_frente_a:{titulo:'Frente al Edificio A (Administrativo)',imgDia:'images/frente-a.jpg',imgNoche:'images/noche/frente-a.jpg',xy:[660,1178],zona:'A',f:'nodo_cruce_c',b:'nodo_entrada',l:null,r:'nodo_pasillo_a'},
+ nodo_cruce_c:{titulo:'Cruce frente al Edificio C',imgDia:'images/cruce-c.jpg',imgNoche:'images/noche/cruce-c.jpg',xy:[660,1115],zona:'C',f:'nodo_pasillo_c',b:'nodo_frente_a',l:null,r:'nodo_plaza'},
+ nodo_pasillo_a:{titulo:'Pasillo Edificio A',imgDia:'images/pasillo-a.jpg',imgNoche:'images/noche/pasillo-a.jpg',xy:[800,1135],zona:'A',f:'nodo_plaza',b:null,l:'nodo_frente_a',r:'nodo_sanitarios_enie'},
+ nodo_sanitarios_enie:{titulo:'Sanitarios Ñ',imgDia:'images/sanitarios-enie.jpg',imgNoche:'images/noche/sanitarios-enie.jpg',xy:[1090,1135],zona:'Ñ',f:null,b:null,l:'nodo_pasillo_a',r:null},
+ nodo_plaza:{titulo:'Plaza cívica',imgDia:'images/plaza.jpg',imgNoche:'images/noche/plaza.jpg',xy:[978,1055],zona:'plaza',f:'nodo_edificio_e',b:'nodo_pasillo_a',l:'nodo_cruce_c',r:null},
+ nodo_edificio_e:{titulo:'Pasillo Edificio E',imgDia:'images/pasillo-e.jpg',imgNoche:'images/noche/pasillo-e.jpg',xy:[1000,965],zona:'E',f:'nodo_l',b:'nodo_plaza',l:'nodo_pasillo_j',r:null},
+ nodo_l:{titulo:'Frente a Intendencia, COMA y CDEX (Edificio L)',imgDia:'images/coma-cdex.jpg',imgNoche:'images/noche/coma-cdex.jpg',xy:[1100,835],zona:'L',f:'nodo_taller_auto',b:'nodo_edificio_e',l:null,r:null},
+ nodo_taller_auto:{titulo:'Taller de Mtto. Automotriz y Almacén',imgDia:'images/taller-auto.jpg',imgNoche:'images/noche/taller-auto.jpg',xy:[900,762],zona:'auto',f:'nodo_k',b:'nodo_l',l:null,r:null},
+ nodo_k:{titulo:'Edificio K (Aulas A23–A26)',imgDia:'images/edificio-k.jpg',imgNoche:'images/noche/edificio-k.jpg',xy:[1165,592],zona:'K',f:'nodo_n',b:'nodo_taller_auto',l:'nodo_electro',r:null},
+ nodo_n:{titulo:'Taller de Servicios Generales',imgDia:'images/taller-servicios.jpg',imgNoche:'images/noche/taller-servicios.jpg',xy:[1330,585],zona:'N',f:null,b:'nodo_k',l:null,r:null},
+ nodo_pasillo_c:{titulo:'Pasillo Edificio C',imgDia:'images/pasillo-c.jpg',imgNoche:'images/noche/pasillo-c.jpg',xy:[620,1063],zona:'C',f:'nodo_pasillo_d',b:'nodo_cruce_c',l:null,r:null},
+ nodo_pasillo_d:{titulo:'Pasillo Edificio D',imgDia:'images/pasillo-d.jpg',imgNoche:'images/noche/pasillo-d.jpg',xy:[620,994],zona:'D',f:'nodo_pasillo_j',b:'nodo_pasillo_c',l:null,r:null},
+ nodo_pasillo_j:{titulo:'Pasillo Edificio J (Cómputo e inglés)',imgDia:'images/pasillo-j.jpg',imgNoche:'images/noche/pasillo-j.jpg',xy:[690,895],zona:'J',f:'nodo_pasillo_b',b:'nodo_pasillo_d',l:'nodo_cafeteria',r:'nodo_edificio_e'},
+ nodo_cafeteria:{titulo:'Cafetería',imgDia:'images/cafeteria.jpg',imgNoche:'images/noche/cafeteria.jpg',xy:[550,760],zona:'cafe',f:null,b:null,l:'nodo_futbol',r:'nodo_pasillo_j'},
+ nodo_futbol:{titulo:'Cancha de fútbol',imgDia:'images/cancha-futbol.jpg',imgNoche:'images/noche/cancha-futbol.jpg',xy:[330,880],zona:'futbol',f:null,b:null,l:null,r:'nodo_cafeteria'},
+ nodo_pasillo_b:{titulo:'Pasillo Edificio B',imgDia:'images/pasillo-b.jpg',imgNoche:'images/noche/pasillo-b.jpg',xy:[700,655],zona:'B',f:'nodo_cancha',b:'nodo_pasillo_j',l:null,r:null},
+ nodo_cancha:{titulo:'Cancha de voleibol',imgDia:'images/cancha-voleibol.jpg',imgNoche:'images/noche/cancha-voleibol.jpg',xy:[600,545],zona:'cancha',f:'nodo_h',b:'nodo_pasillo_b',l:'nodo_mecatronica',r:'nodo_electro'},
+ nodo_mecatronica:{titulo:'Taller de Mecatrónica',imgDia:'images/taller-mecatronica.jpg',imgNoche:'images/noche/taller-mecatronica.jpg',xy:[390,590],zona:'M',f:null,b:null,l:null,r:'nodo_cancha'},
+ nodo_electro:{titulo:'Taller de Electromecánica',imgDia:'images/taller-electromecanica.jpg',imgNoche:'images/noche/taller-electromecanica.jpg',xy:[900,580],zona:'electro',f:null,b:null,l:'nodo_cancha',r:'nodo_k'},
+ nodo_h:{titulo:'Edificio H · Biblioteca',imgDia:'images/biblioteca-h.jpg',imgNoche:'images/noche/biblioteca-h.jpg',xy:[725,345],zona:'H',f:null,b:'nodo_cancha',l:'nodo_i',r:'nodo_g'},
+ nodo_i:{titulo:'Edificio I (Aulas A19–A22)',imgDia:'images/pasillo-i.jpg',imgNoche:'images/noche/pasillo-i.jpg',xy:[400,372],zona:'I',f:'nodo_o',b:null,l:'nodo_basket',r:'nodo_h'},
+ nodo_o:{titulo:'Laboratorio de cómputo 3 (Edificio O)',imgDia:'images/lab-computo-3.jpg',imgNoche:'images/noche/lab-computo-3.jpg',xy:[490,275],zona:'O',f:null,b:'nodo_i',l:null,r:null},
+ nodo_g:{titulo:'Estacionamiento G',imgDia:'images/estacionamiento-g.jpg',imgNoche:'images/noche/estacionamiento-g.jpg',xy:[980,365],zona:'G',f:null,b:null,l:'nodo_h',r:null},
+ nodo_basket:{titulo:'Cancha de basquetbol',imgDia:'images/cancha-basquetbol.jpg',imgNoche:'images/noche/cancha-basquetbol.jpg',xy:[250,372],zona:'basket',f:null,b:null,l:null,r:'nodo_i'}
+};
+
+// =====================================================================
+//  RED AMPLIADA · GUÍA PASO A PASO (entrada → pasillos → escaleras → aula)
+//  Cada nodo nuevo aparece solo en "Ir a…", en "¿Cómo llegar?" y en MIS FOTOS (que lee esta lista), con su propia foto de día y de noche.
+//  Fotos: images/NOMBRE.jpg y images/noche/NOMBRE.jpg · ni:1 = lugar interior (no cambia el "Ubicación" del recorrido 3D).
+//  Enlaces f / b / l / r: a qué nodo lleva cada flecha (null = sin camino). Ajusta los enlaces de las escaleras de D, E y K a tu recorrido real.
+// =====================================================================
+const nd=s=>/^A\d+$/.test(s)?'nodo_aula_'+s.toLowerCase():s;
+const NN=(id,titulo,foto,xy,f,b,l,r,ni)=>{NODOS[id]={titulo,imgDia:`images/${foto}.jpg`,imgNoche:`images/noche/${foto}.jpg`,xy,zona:null,f:f&&nd(f),b:b&&nd(b),l:l&&nd(l),r:r&&nd(r)};if(ni)NODOS[id].ni=1};
+// -- Entrada y recorrido hacia los edificios (se intercalan nodos en la ruta existente) --
+NN('nodo_pasillo_entrada','Pasillo de la entrada','pasillo-entrada',[659,1222],'nodo_frente_a','nodo_entrada',null,null);
+NN('nodo_escalera_c','Escaleras del Edificio C (suben a Planta Alta)','escaleras-c',[606,1050],'nodo_pasillo_d','nodo_pasillo_c',null,'nodo_c_pa');
+NN('nodo_c_pa','Edificio C · Planta Alta (pasillo)','c-planta-alta',[640,1048],null,'nodo_escalera_c','A6',null,1);
+NN('nodo_escalera_d','Escaleras del Edificio D (suben a Planta Alta)','escaleras-d',[606,945],'nodo_pasillo_j','nodo_pasillo_d',null,'nodo_d_pa');
+NN('nodo_d_pa','Edificio D · Planta Alta (pasillo)','d-planta-alta',[640,943],null,'nodo_escalera_d','A8','A9',1);
+NN('nodo_d_pb','Edificio D · Planta Baja (CAED y laboratorios)','d-planta-baja',[520,985],null,'nodo_pasillo_d',null,'nodo_pasillo_d');
+NN('nodo_escalera_e','Escaleras del Edificio E (suben a Planta Alta)','escaleras-e',[1108,925],'nodo_e_pa','A12','A12',null);
+NN('nodo_e_pa','Edificio E · Planta Alta (pasillo)','e-planta-alta',[1098,907],null,'nodo_escalera_e','A15',null,1);
+NN('nodo_escalera_k','Escaleras del Edificio K (suben a Planta Alta)','escaleras-k',[1238,538],'nodo_k_pa','A24','A24',null);
+NN('nodo_k_pa','Edificio K · Planta Alta (pasillo)','k-planta-alta',[1225,525],null,'nodo_escalera_k','A26',null,1);
+// -- Enlaces nuevos en nodos que ya existían --
+Object.assign(NODOS.nodo_entrada,{f:'nodo_pasillo_entrada'});Object.assign(NODOS.nodo_frente_a,{b:'nodo_pasillo_entrada'});
+Object.assign(NODOS.nodo_pasillo_c,{f:'nodo_escalera_c',l:nd('A3'),r:nd('A2')});
+Object.assign(NODOS.nodo_pasillo_d,{b:'nodo_escalera_c',f:'nodo_escalera_d',l:'nodo_d_pb'});
+Object.assign(NODOS.nodo_pasillo_j,{b:'nodo_escalera_d'});
+Object.assign(NODOS.nodo_edificio_e,{r:nd('A10')});Object.assign(NODOS.nodo_k,{r:nd('A24')});
+Object.assign(NODOS.nodo_pasillo_b,{l:nd('A18'),r:nd('A16')});Object.assign(NODOS.nodo_i,{b:nd('A21')});
+// -- Aulas A1 a A26: [aula, edificio, planta, x, y, adelante, atrás, izquierda, derecha] --
+const AULAS={};
+[['A1','C','b',754,1077,null,'A2','A2',null],['A2','C','b',672,1077,null,'nodo_pasillo_c','nodo_pasillo_c','A1'],
+ ['A3','C','b',590,1077,null,'nodo_pasillo_c','A4','nodo_pasillo_c'],['A4','C','b',508,1077,null,'A3',null,'A3'],
+ ['A5','C','a',508,1050,null,'A6',null,'A6'],['A6','C','a',590,1050,null,'nodo_c_pa','A5','nodo_c_pa'],
+ ['A7','D','a',508,932,null,'A8',null,'A8'],['A8','D','a',590,932,null,'nodo_d_pa','A7','nodo_d_pa'],['A9','D','a',672,932,null,'nodo_d_pa','nodo_d_pa',null],
+ ['A10','E','b',950,932,null,'nodo_edificio_e','nodo_edificio_e','A11'],['A11','E','b',1014,932,null,'A10','A10','A12'],['A12','E','b',1079,932,null,'A11','A11','nodo_escalera_e'],
+ ['A13','E','a',950,907,null,'A14',null,'A14'],['A14','E','a',1014,907,null,'A15','A13','A15'],['A15','E','a',1079,907,null,'nodo_e_pa','A14','nodo_e_pa'],
+ ['A16','J','b',700,748,null,'nodo_pasillo_b','nodo_pasillo_b',null],
+ ['A17','B','b',606,609,null,'A18',null,'A18'],['A18','B','b',660,609,null,'nodo_pasillo_b','A17','nodo_pasillo_b'],
+ ['A19','I','b',293,324,null,'A20',null,'A20'],['A20','I','b',360,324,null,'A21','A19','A21'],['A21','I','b',427,324,'nodo_i','nodo_i','A20','A22'],['A22','I','b',494,324,null,'A21','A21',null],
+ ['A23','K','b',1140,554,null,'A24',null,'A24'],['A24','K','b',1210,554,null,'nodo_k','A23','nodo_escalera_k'],
+ ['A25','K','a',1140,525,null,'A26',null,'A26'],['A26','K','a',1210,525,null,'nodo_k_pa','A25','nodo_k_pa']
+].forEach(([n,e,p,x,y,f,b,l,r])=>{const id=nd(n),t=`Aula ${n} · Edificio ${e} · ${p==='a'?'Planta Alta':'Planta Baja'}`;
+ NN(id,t,'aula-'+n.toLowerCase(),[x,y],f,b,l,r,1);AULAS[n]={nodo:id,zona:e,t}});
+
+// ---- Marcador en el plano (junto al acceso principal) que abre el visor ----
+const gm=mk('g',{class:'mk',style:'cursor:pointer'},$('#pr'));
+mk('circle',{cx:658,cy:1196,r:34,fill:'transparent'},gm);
+mk('circle',{cx:658,cy:1196,r:20,fill:'#1f3a5f',stroke:'#fff','stroke-width':3},gm);
+mk('path',{d:'M646 1196Q658 1186 670 1196Q658 1206 646 1196Z',fill:'none',stroke:'#fff','stroke-width':2.2},gm);
+mk('circle',{cx:658,cy:1196,r:3.2,fill:'#fff'},gm);
+mk('text',{x:630,y:1202,'text-anchor':'end','font-size':13,'font-weight':700,fill:'#1f3a5f','letter-spacing':1,'paint-order':'stroke',stroke:'#e4e7eb','stroke-width':4},gm).textContent='VISTA DE CALLE';
+
+// ---- Motor del visor ----
+const svEl=$('#sv'),LY=[$('#p0'),$('#p1')],cache={},DIM='brightness(.42) saturate(.7) contrast(1.05) hue-rotate(-10deg)';
+let svCur=null,svAct=1,svMode='dia',you=null;
+Object.entries(NODOS).forEach(([id,n])=>{const o=document.createElement('option');o.value=id;o.textContent=n.titulo;$('#svsel').appendChild(o)});
+const placeholder=(n,m)=>{const nt=m==='noche';return 'data:image/svg+xml,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${nt?'#1b2a44':'#7f93ab'}"/><stop offset=".55" stop-color="${nt?'#33425e':'#b9c4d1'}"/><stop offset=".55" stop-color="${nt?'#222c3b':'#8a95a3'}"/><stop offset="1" stop-color="${nt?'#10161f':'#5c6674'}"/></linearGradient></defs><rect width="1600" height="900" fill="url(#g)"/><path d="M0 495H1600M800 495L330 900M800 495L1270 900" stroke="#fff" stroke-opacity=".3" stroke-width="3"/><text x="800" y="360" text-anchor="middle" font-family="sans-serif" font-size="54" font-weight="700" fill="#fff">${n.titulo}</text><text x="800" y="420" text-anchor="middle" font-family="monospace" font-size="28" fill="#fff" fill-opacity=".85">FOTO PENDIENTE (${nt?'NOCHE':'DÍA'}) · ${nt?n.imgNoche:n.imgDia}</text></svg>`)};
+const tryLoad=src=>new Promise(ok=>{if(!src)return ok(false);const i=new Image();i.onload=()=>ok({w:i.naturalWidth||1600,h:i.naturalHeight||900});i.onerror=()=>ok(false);i.src=src});
+const dimsOf=src=>new Promise(ok=>{const i=new Image();i.onload=()=>ok({w:i.naturalWidth||1600,h:i.naturalHeight||900});i.onerror=()=>ok(null);i.src=src});
+// Devuelve {url, dim}: foto del modo actual; en noche, si falta imgNoche usa imgDia oscurecida
+const MYU={},MYB={};   // fotos propias cargadas desde el teléfono: dirección temporal y archivo, por nodo y modo
+async function loadImg(id,m){
+ const k=id+m;if(cache[k])return cache[k];const n=NODOS[id];
+ const mia=async(u,dim)=>{const d=await dimsOf(u)||{w:1600,h:900};return cache[k]={url:`url("${u}")`,dim,w:d.w,h:d.h}};
+ if(MYU[k])return mia(MYU[k],false);
+ if(m==='noche'&&MYU[id+'dia'])return mia(MYU[id+'dia'],true);   // sin foto de noche propia: la de día oscurecida
+ if(m==='noche'){const r=await tryLoad(n.imgNoche);if(r)return cache[k]={url:`url("${n.imgNoche}")`,dim:false,w:r.w,h:r.h}}
+ const r=await tryLoad(n.imgDia);if(r)return cache[k]={url:`url("${n.imgDia}")`,dim:m==='noche',w:r.w,h:r.h};
+ return cache[k]={url:`url("${placeholder(n,m)}")`,dim:false,w:1600,h:900};
+}
+// ---- VISTA DE LA FOTO: se puede mover (giro), acercar y restablecer. fx, fy = punto de la foto que queda al centro (0 a 1); z = zoom ----
+const V={z:1,fx:.5,fy:.5};
+function medir(l){const vw=svEl.clientWidth||innerWidth,vh=svEl.clientHeight||innerHeight,f=l._f,s=Math.max(vw/f.w,vh/f.h)*V.z;return{vw,vh,dw:f.w*s,dh:f.h*s}}
+function colocar(l){if(!l._f)return;const {vw,vh,dw,dh}=medir(l);
+ let ox=vw/2-V.fx*dw,oy=vh/2-V.fy*dh;ox=Math.min(0,Math.max(vw-dw,ox));oy=Math.min(0,Math.max(vh-dh,oy));
+ V.fx=(vw/2-ox)/dw;V.fy=(vh/2-oy)/dh;l.style.backgroundSize=dw+'px '+dh+'px';l.style.backgroundPosition=ox+'px '+oy+'px'}
+function youAt([x,y]){   // punto naranja de "tú estás aquí" en el plano
+ if(!you){you=mk('g',{id:'you','pointer-events':'none'},$('#pr'));
+  mk('circle',{class:'pl',r:14,fill:'#c2410c'},you);mk('circle',{r:7,fill:'#c2410c',stroke:'#fff','stroke-width':3},you)}
+ you.setAttribute('transform',`translate(${x} ${y})`);
+}
+
+async function svGo(id,dir){
+ const n=NODOS[id];if(!n)return;
+ const f=await loadImg(id,svMode),nx=LY[1-svAct],ol=LY[svAct];
+ const M={f:['scale(.92)','scale(1.12)'],b:['scale(1.1)','scale(.92)'],l:['translateX(-6%) scale(1.06)','translateX(6%) scale(1.06)'],r:['translateX(6%) scale(1.06)','translateX(-6%) scale(1.06)']}[dir]||['none','none'];
+ nx._f=f;if(id!==svCur){V.z=1;V.fx=.5;V.fy=.5}colocar(nx);
+ nx.style.transition='none';nx.style.backgroundImage=f.url;nx.style.filter=f.dim?DIM:'';nx.style.transform=M[0];void nx.offsetWidth;
+ nx.style.transition='';nx.style.transform='';nx.classList.add('on');
+ ol.classList.remove('on');ol.style.transform=M[1];
+ svAct=1-svAct;svCur=id;
+ $('#svt').textContent=n.titulo;$('#svsel').value=id;   // indicador "Ubicación: ..."
+ ['f','b','l','r'].forEach(k=>{$('#n'+k).classList.toggle('off',!n[k]);if(n[k])loadImg(n[k],svMode)});
+ youAt(n.xy);svRoute();
+}
+function setMode(m){
+ svMode=m;const nt=m==='noche';
+ svEl.classList.toggle('noche',nt);$('#isun').hidden=nt;$('#imoon').hidden=!nt;$('#smt').textContent=nt?'Noche':'Día';
+ if(svCur)svGo(svCur,null);   // misma ubicación, foto del otro modo
+}
+function openSV(id){svEl.classList.add('open');svEl.setAttribute('aria-hidden','false');svGo(id||svCur||SV_INICIO,null)}
+function closeSV(){svEl.classList.remove('open');svEl.setAttribute('aria-hidden','true')}
+const step=k=>{const n=NODOS[svCur];if(n&&n[k])svGo(n[k],k)};
+['f','b','l','r'].forEach(k=>$('#n'+k).onclick=()=>step(k));
+$('#svx').onclick=closeSV;$('#svb').onclick=()=>openSV();
+$('#sm').onclick=()=>setMode(svMode==='dia'?'noche':'dia');
+$('#svsel').onchange=e=>svGo(e.target.value,null);
+addEventListener('keydown',e=>{
+ if(!svEl.classList.contains('open')||e.target.tagName==='SELECT')return;
+ const k={ArrowUp:'f',ArrowDown:'b',ArrowLeft:'l',ArrowRight:'r'}[e.key];
+ if(k){e.preventDefault();step(k)}else if(e.key==='Escape')closeSV();else if(e.key==='n'||e.key==='N')$('#sm').click();
+});
+
+// ---- Botón "Ver vista del aula": aparece en la tarjeta al tocar una zona ----
+// Abre el visor de calle en el primer nodo cuyo campo  zona  coincide con la zona tocada.
+// Si una zona no tiene nodo (ver NODOS), el botón no aparece.
+let svzNode=null;
+function updSV(id){
+ const z=Z.find(w=>w.id===id);
+ svzNode=Object.keys(NODOS).find(k=>NODOS[k].zona===id)||null;
+ $('#svz').hidden=!svzNode;
+ $('#svzt').textContent=/aula/i.test(z.t)?'Ver vista del aula':'Ver vista del lugar';
+}
+$('#svz').onclick=()=>svzNode&&openSV(svzNode);
+
+// =====================================================================
+//  RECORRIDO 3D  (motor propio sobre <canvas>, sin librerías externas)
+//  - Los edificios se levantan en 3D a partir de las mismas coordenadas g del arreglo Z.
+//  - Alturas: 2 plantas = 44, talleres = 40, edificios de 1 planta = 26, canchas/estacionamientos/plaza = planas.
+//    (Cambia la línea  const ht=...  si quieres otras alturas.)
+//  - Controles: W/S o flechas ↑↓ = avanzar/retroceder · A/D = lado · ←/→ o Q/E = girar · arrastrar = mirar
+//    En celular: botones en pantalla y arrastrar para girar. "Recorrido automático" sigue la ruta  RUTA_3D.
+// =====================================================================
+(()=>{
+const el=$('#td'),cv=$('#tc'),g=cv.getContext('2d'),EYE=5.5,NEAR=2,DPRMAX=Math.min(1.5,window.devicePixelRatio||1);
+let dpr=DPRMAX;
+const rgbOf=c=>[1,3,5].map(i=>parseInt(c.slice(i,i+2),16));
+// ---- PALETA 3D (basada en la foto de la entrada del CBTis 123). Edita aquí los colores ----
+const PAL={muro:'#f3f0e8',taller:'#e8e4da',acento:'#a1312e',filete:'#f6f3ec',zocalo:'#9a4036',puerta:'#6e2220',cancha:'#3f6ea5',pasto:'#6fa86b',plaza:'#c4684f',asfalto:'#44474d'};   // acento = rojo de las aulas · zocalo = ladrillo rojo · el portal de entrada sigue azul
+const RG={acento:rgbOf(PAL.acento),filete:rgbOf(PAL.filete),zocalo:rgbOf(PAL.zocalo),puerta:rgbOf(PAL.puerta)};
+const RGL={acento:rgbOf('#80858c'),filete:rgbOf('#e8e8e4'),zocalo:rgbOf('#9a9ea4'),puerta:rgbOf('#8d949b')};   // paleta gris del edificio L (columnas, base y puertas grises)
+const ALT=new Set(['comacdex']);   // zonas que usan la paleta gris en vez de la roja
+const col3d=z=>z.id==='comacdex'?'#f7f7f4':z.t==='Talleres'?PAL.taller:z.id==='futbol'?PAL.pasto:z.t==='Deportes'?PAL.cancha:z.id==='plaza'?PAL.plaza:(z.t==='Estacionamiento'||z.id==='acceso')?PAL.asfalto:PAL.muro;
+// ---- NIVELES DEL TERRENO: arriba (entrada, A, C, D, E, plaza) = 0 · abajo (cafetería, J, B, H, I, talleres...) = -9 ----
+// Se baja por las escaleras (x 530-554 y 820-848) o por la rampa para sillas de ruedas (x 556-578), todas sobre y = 862-880.
+const lvl=(x,y)=>{if(y>=880||(x<420&&y>590))return 0;if(x>=556&&x<=578&&y>775)return -9+(y-775)/105*9;if(x>=1122&&x<=1146&&y>775)return -9+(y-775)/105*9;if(y>862&&((x>=530&&x<=554)||(x>=820&&x<=848)))return -9+(y-862)/18*9;return -9};
+const BX=[];
+Z.forEach(z=>{const ht=z.id==='futbol'?-14:(z.id==='puestos'||z.id==='papeleria'||z.id==='poli')?14:z.p?44:z.t==='Talleres'?40:/Deportes|Estacionamiento|Espacio|Acceso/.test(z.t)?1.2:26;
+ z.ht=ht;z.g.forEach(([x,y,w,h])=>BX.push({z,x,y,w,h,ht,c:rgbOf(col3d(z))}))});
+// ---- Elementos de escuela (decorado). D(x, y, ancho, fondo, altura, color, base, opciones) · nc = no bloquea el paso ----
+const D=(x,y,w,h,ht,c,b=0,o={})=>BX.push({z:{},x,y,w,h,ht,b,c:rgbOf(c),...o});
+const tree=(x,y)=>{D(x-1,y-1,2,2,8,'#7a5a3c',0,{nc:1});D(x-6,y-6,12,12,17,'#6f9f6a',8,{nc:1});D(x-3.5,y-3.5,7,7,23,'#7fb079',17,{nc:1})};
+for(let x=90;x<=910;x+=55)tree(x,52);
+for(let y=110;y<=600;y+=55){if(y<370)tree(52,y);tree(950,y)}
+[[405,215],[595,215],[405,415],[595,415]].forEach(p=>tree(...p));
+const CC=['#b5483b','#3f6fa8','#d9d9d9','#2d3a4a','#c9a227','#6c8f5e'];
+for(let i=0;i<9;i++)D(728+i*37,1259,14,22,6,CC[i%6],0,{nc:1});      // estacionamiento sur
+for(let i=0;i<6;i++)D(645+i*42,198,14,22,6,CC[(i+2)%6],0,{nc:1});   // estacionamiento norte
+for(let i=0;i<3;i++)D(938+i*30,290,14,22,6,CC[(i+4)%6],0,{nc:1});   // estacionamiento G
+[[385,472],[557,707],[557,812],[1040,322],[1075,607],[633,1155],[1240,385]].forEach(([x,y])=>{   // puntos de reunión
+ D(x-.5,y-.5,1,1,9,'#6b7685',0,{nc:1});D(x-5,y-.5,10,1,17,'#2fa35a',9,{nc:1})});
+D(977,1054,2,2,62,'#c9cdd3',0,{nc:1});D(979,1054,6,1,60,'#006847',50,{nc:1});D(985,1054,6,1,60,'#ffffff',50,{nc:1});D(991,1054,6,1,60,'#ce1126',50,{nc:1});   // asta bandera en la plaza cívica
+[162,340].forEach(y=>{D(153,y,2,2,16,'#6b7685',0,{nc:1});D(147,y,14,1,18,'#f4f4f4',12,{nc:1})});   // canastas
+
+// PAREDES (concreto) y REJAS (barras blancas, como en la foto) alrededor de todo el plantel. La entrada queda abierta.
+const seg=(x1,y1,x2,y2,n,ht,c,o)=>{const hz=Math.abs(x2-x1)>=Math.abs(y2-y1);
+ for(let i=0;i<n;i++){const t0=i/n,t1=(i+1)/n,xa=x1+(x2-x1)*t0,xb=x1+(x2-x1)*t1,ya=y1+(y2-y1)*t0,yb=y1+(y2-y1)*t1;
+  if(hz)D(Math.min(xa,xb),(ya+yb)/2-2,Math.abs(xb-xa)+.6,4,ht,c,0,o);else D((xa+xb)/2-2,Math.min(ya,yb),4,Math.abs(yb-ya)+.6,ht,c,0,o)}};
+const wallE=(x1,y1,x2,y2,n)=>seg(x1,y1,x2,y2,n,24,'#7b4f33',{wall:1}),rejaE=(x1,y1,x2,y2,n)=>seg(x1,y1,x2,y2,n,20,'#f1ecdf',{wall:1,reja:1});
+wallE(45,148,1030,201.7,11);wallE(1066,203.7,1090,205,1);   // muro norte con hueco para la salida de autos (x 1030-1066)
+// SALIDA DE AUTOS: reja cerrada, pilares, pluma, lector de tarjeta y caseta de registro (solo con tarjeta de trabajo)
+D(1027,198.5,6,6,22,'#d9d4c7',0,{wall:1});D(1063,200,6,6,22,'#d9d4c7',0,{wall:1});   // pilares
+D(1033,200,30,3.5,20,'#f1ecdf',0,{wall:1,reja:1});   // reja cerrada
+D(1034,199,28,1.2,29,'#b3312d',22,{nc:1});           // tablero rojo sobre la reja
+D(1031,216,34,1.6,10,'#c0392b',8.4,{nc:1});D(1065,214.5,3.5,3.5,11,'#2d3a4a',0,{wall:1});   // pluma de acceso
+D(1040,212,3,3,9,'#2d3a4a',0,{wall:1});D(1040.5,212.5,2,2,10.4,'#2fa35a',9,{nc:1});         // lector de tarjeta con luz verde
+D(1068,218,12,12,16,'#ece7da',0,{wall:1});D(1067,217,14,14,17.5,'#b3312d',16,{nc:1});         // caseta de registro con techito rojo
+wallE(1090,205,1060,488,6);wallE(1060,488,1408,488,1);wallE(1408,488,1408,611,1);wallE(1408,611,1222,611,1);wallE(1222,611,1195,1300,8);wallE(47,148,47,375,2);wallE(47,375,100,375,1);wallE(47,375,47,1275,6);
+rejaE(100,375,100,590,2);rejaE(100,590,420,590,3);rejaE(420,590,420,1275,7);   // barandal entre el plantel y la cancha (nivel más bajo)
+D(416,590,4,290,-9,'#c9c2b4',-14,{nc:1,oy:0});D(416,880,4,395,0,'#c9c2b4',-14,{nc:1,oy:0});D(100,586,320,4,-9,'#c9c2b4',-14,{nc:1,oy:0});   // muro de contención
+rejaE(420,1300,608,1300,2);rejaE(708,1300,1195,1300,5);rejaE(420,1275,420,1300,1);rejaE(50,1275,420,1275,4);   // rejas frente a la calle
+// límites de la calle (el recorrido no puede salir de aquí)
+D(-40,1300,4,100,40,'#6b4a33',0,{wall:1});D(1450,1300,4,100,40,'#6b4a33',0,{wall:1});D(-40,1396,1494,4,40,'#6b4a33',0,{wall:1});
+// ---- ESCALERAS Y RAMPA hacia la cafetería (y los edificios de abajo) ----
+const WC='#c9c2b4';
+D(420,878,108,4,0,WC,-9,{oy:0,wall:1,only:'n'});D(580,878,240,4,0,WC,-9,{oy:0,wall:1,only:'n'});D(848,878,270,4,0,WC,-9,{oy:0,wall:1,only:'n'});D(1148,878,67,4,0,WC,-9,{oy:0,wall:1,only:'n'});   // muro de contención con 2 huecos: escaleras de la cafetería (528-580) y escaleras del lado este (820-848)
+for(let i=0;i<6;i++){const t=-9+(i+1)*1.5;D(530,862+3*i,24,3,t,'#c8c2b8',-9,{oy:0,nc:1});D(820,862+3*i,28,3,t,'#c8c2b8',-9,{oy:0,nc:1})}   // escaleras
+for(let i=0;i<18;i++){const t=-9+(i+1)*.5,y=775+i*5.84;D(557,y,20,5.84,t,'#d9d4ca',-9,{oy:0,nc:1});D(555.6,y,1.4,5.84,t+3,'#9aa0a8',t,{oy:0,nc:1});D(577,y,1.4,5.84,t+3,'#9aa0a8',t,{oy:0,nc:1})}   // rampa para sillas de ruedas con pasamanos, a la derecha de las escaleras
+// ---- PASILLO a la cancha de voleibol (al quitar la mitad izquierda del edificio B) y red de voleibol ----
+D(472,565,107,92,1,'#c6c9ce',0,{nc:1});D(530,657,48,112,1,'#c6c9ce',0,{nc:1});
+D(593.5,413,1,134,12,'#ececec',7,{nc:1});D(593,408,2,2,13,'#9aa0a8',0,{nc:1});D(593,548,2,2,13,'#9aa0a8',0,{nc:1});
+D(427,641,42,10,12.5,'#e0a800',11,{nc:1});   // toldo de la papelería
+// ---- PASILLO ESTE: rampa con techo, mesas y sillas de colores (la Intendencia es el edificio L, a la izquierda) ----
+for(let i=0;i<18;i++){const t=-9+(i+1)*.5,y=775+i*5.84;D(1123,y,22,5.84,t,'#d9d4ca',-9,{oy:0,nc:1});D(1121.6,y,1.4,5.84,t+3,'#9aa0a8',t,{oy:0,wall:1});D(1145,y,1.4,5.84,t+3,'#9aa0a8',t,{oy:0,wall:1})}   // rampa con pasamanos
+D(1117,775,36,110,13,'#b9b6b2',11.5,{oy:0,nc:1});   // techo de la rampa
+[[775,-9],[828,-4.5],[882,0]].forEach(([y,b])=>{D(1117,y,2.5,2.5,11.5,'#9aa0a8',b,{oy:0,nc:1});D(1150.5,y,2.5,2.5,11.5,'#9aa0a8',b,{oy:0,nc:1})});   // columnas del techo
+const mesa=(x,y,c1,c2)=>{D(x-.6,y-.6,1.2,1.2,4,'#8a8f98',0,{nc:1});D(x-3.5,y-3.5,7,7,5,c1,4,{nc:1});   // mesa chica y 4 sillas
+ [[-6.2,-1.3],[3.6,-1.3],[-1.3,-6.2],[-1.3,3.6]].forEach(([dx,dy])=>D(x+dx,y+dy,2.6,2.6,3.2,c2,0,{nc:1}))};
+mesa(1166,796,'#d9534f','#f0ad4e');mesa(1186,796,'#3b82c4','#f2d03b');mesa(1176,817,'#f2c230','#2e9e6b');   // mesas y sillas de colores
+// ---- ENTRADA ESTUDIANTIL (como la salida de autos, pero con credencial estudiantil): hojas de reja abiertas, arco detector de metales, lector y caseta del policía (izquierda al entrar) ----
+D(606,1258,3.5,26,20,'#f1ecdf',0,{wall:1,reja:1});D(707,1258,3.5,26,20,'#f1ecdf',0,{wall:1,reja:1});   // hojas de la reja, abiertas a los lados
+D(638,1260,4,4,15,'#2d3a4a',0,{wall:1});D(676,1260,4,4,15,'#2d3a4a',0,{wall:1});D(638,1260,42,4,17.5,'#2d3a4a',14.5,{nc:1});D(656,1260.5,6,3,19,'#2fa35a',17.5,{nc:1});   // arco detector de metales
+D(688,1266,3,3,9,'#2d3a4a',0,{wall:1});D(688.5,1266.5,2,2,10.4,'#2fa35a',9,{nc:1});   // lector de credencial estudiantil
+D(573,1261,26,20,15.5,'#1f2f78',14,{nc:1});   // techo azul de la caseta del policía
+// ---- EDIFICIO L (según la foto): techo plano con volado y techumbre metálica con postes amarillos ----
+D(1007,794,60,84,28.5,'#8d9096',26,{nc:1});   // techo con volado
+D(980,806,24,60,24.5,'#c9ccd0',22.5,{nc:1});[[980,806],[1002,806],[980,862],[1002,862]].forEach(([x,y])=>D(x,y,1.8,1.8,22.5,'#e6c200',0,{nc:1}));   // techumbre y postes amarillos
+// (El área de receso se eliminó: ese espacio es ahora un pasillo libre con los letreros COMA y CDEX.)
+// ---- QUITAR_3D: piezas (rectángulos) de una zona que NO se construyen en el 3D (el plano 2D no cambia) ----
+// Formato: ['id de zona', número de rectángulo contando desde 0].  ['auto',1] quita el almacén pegado al taller automotriz.
+// Para volver a ponerlo, borra esa fila.
+const QUITAR_3D=[['auto',1]];
+QUITAR_3D.forEach(([id,n])=>{const L=BX.filter(b=>b.z.id===id);if(L[n])BX.splice(BX.indexOf(L[n]),1)});
+// ---- PASOS por la planta baja de un edificio: ['id de zona', x donde empieza el paso, ancho, altura libre] ----
+// Ejemplo: ['C',596,52,14] abre un paso de 52 de ancho y 14 de alto en la planta baja del edificio C (arriba queda construido).
+// Para abrir otro (por ejemplo en D) agrega otra fila: ['D',596,52,14]
+const PASOS=[['C',596,52,14],['D',596,52,14]];
+PASOS.forEach(([id,px,pw,ph])=>{const i=BX.findIndex(b=>b.z.id===id);if(i<0)return;const b=BX.splice(i,1)[0];
+ BX.push({...b,w:px-b.x,pass:1},{...b,x:px+pw,w:b.x+b.w-px-pw,pass:1},{...b,x:px,w:pw,b:ph,nc:1})});
+for(let i=0;i<5;i++)D(597,1070-4*i,10,4,2*(i+1),'#bdb6a8',0,{nc:1});   // escalera dentro del paso del edificio C (sube a la planta alta)   // izquierda, derecha y la parte alta sobre el paso (sin colisión)
+// ---- Plaza cívica real: piso rojizo con zona azul, escenario con fondo blanco y logo rojo ----
+D(930,1040,70,52,1.5,'#6f8fb5',0,{nc:1});                                    // zona azul del piso de la plaza
+D(1078,985,6,140,32,'#f4f2ec',0,{wall:1});D(1072,1020,6,24,24,'#9b2d2a',6,{nc:1});   // fondo blanco del escenario y logo rojo
+D(1050,990,28,130,3.5,'#b8403a',0,{nc:1});                                    // tarima con franja roja
+[[862,1000,10,55],[880,1148,70,8],[960,1148,60,8]].forEach(([x,y,w,h])=>D(x,y,w,h,8,'#4f8a45',0,{nc:1}));   // arbustos
+const pine=(x,y)=>{D(x-1.5,y-1.5,3,3,10,'#6b4a33',0,{nc:1});D(x-9,y-9,18,18,26,'#3f6b49',6,{nc:1});D(x-6,y-6,12,12,38,'#46754f',26,{nc:1});D(x-3,y-3,6,6,50,'#4d7f57',38,{nc:1})};
+[[455,1200],[590,1160],[1160,1100]].forEach(p=>pine(...p));
+const treeC=(x,y,c)=>{D(x-1,y-1,2,2,8,'#7a5a3c',0,{nc:1});D(x-6,y-6,12,12,17,'#6f9f6a',8,{nc:1});D(x-3.5,y-3.5,7,7,23,c,17,{nc:1})};
+[[480,1240],[1170,980]].forEach(([x,y])=>treeC(x,y,'#e0743a'));   // árboles con flores naranjas
+// PORTAL DE ACCESO (según la foto): concreto aparente, letras "123" sobre paneles azules, techo de concreto, piso de piedra clara
+D(520,1282,86,16,34,'#b9b7b6',0,{wall:1,panel:'#1f2f78'});     // muro izquierdo (panel azul)
+D(710,1282,90,16,34,'#b9b7b6',0,{wall:1,panel:'#1f2f78'});     // muro derecho con el letrero "123"
+D(530,1270,270,28,34,'#a9a7a5',29,{nc:1});                      // techo (volado) de concreto
+D(600,1268,116,30,1.6,'#dccfbd',0,{nc:1});                      // piso de piedra clara
+D(470,1286,45,6,5,'#5f8f5a',0,{nc:1});D(805,1286,45,6,5,'#5f8f5a',0,{nc:1});   // jardineras
+[450,596,720,900,1100].forEach(x=>{D(x,1306,1.6,1.6,48,'#4a4f57',0,{nc:1});D(x-3,1305,8,3,50,'#fffbe0',47,{nc:1})});   // postes de luz
+['#c0392b','#e0a800','#2f5fa8'].forEach((c,i)=>D(499+i*34,1299,28,16,16,c,14,{nc:1}));   // toldos de los 3 puestos (antes del acceso, a la izquierda)
+BX.forEach(b=>{if(b.oy===undefined)b.oy=lvl(b.x+b.w/2,b.y+b.h/2);if(b.z.id&&b.z.oy===undefined)b.z.oy=b.oy});   // cada pieza toma el nivel del terreno donde está
+const rc=([x,y,w,h])=>[[x,y],[x+w,y],[x+w,y+h],[x,y+h]];
+const GR=[['#2e3034',rc([-2000,1315,5000,56])],
+ ['#26282c',[[420,880],[1211.5,880],[1195,1300],[420,1300]]],
+ ['#b08d63',[[47,378],[100,378],[100,590],[420,590],[420,1275],[50,1275]],-14]
+].concat([[262,160,268,250],[715,350,80,210],[420,420,55,140],[583,600,180,150],[420,848,430,32],[420,880,430,420],[1115,830,90,50],[1115,880,90,310],[1060,490,200,70]].map(r=>['#a7c7a1',rc(r),r[1]+r[3]<=880?-9:0]));
+GR.unshift(GR.splice(2,1)[0]);
+GR.splice(1,0,['#26282c',[[45,148],[1090,205],[1060,488],[1408,488],[1408,611],[1222,611],[1211.5,880],[420,880],[420,590],[100,590],[100,375],[45,375]],-9]);   // nivel de abajo   // terreno bajo (cancha de tierra, fuera del plantel): se dibuja primero y queda 14 unidades más abajo que las aulas
+const fl=(x1,z1,x2,z2)=>{const dx=x2-x1,dz=z2-z1,l=Math.hypot(dx,dz),nx=-dz/l*1.2,nz=dx/l*1.2;return['#f2efe6',[[x1+nx,z1+nz],[x2+nx,z2+nz],[x2-nx,z2-nz],[x1-nx,z1-nz]],-13.9]};
+[[60,650,383,650],[383,650,383,1115],[383,1115,60,1115],[60,1115,60,650],[60,882,383,882]].forEach(a=>GR.push(fl(...a)));   // líneas de la cancha
+// RUTA del recorrido automático: puntos [x, y] sobre pasillos abiertos del plano
+const RUTA_3D=[[658,1340],[658,1262],[658,1125],[830,1120],[840,1000],[840,900],[690,895],[567,892],[567,775],[553,700],[553,590],[640,520],[740,362],[400,372],[250,358]];
+const P={x:658,y:1340,yaw:0},ky={},hd={},tour={on:false,i:1};
+let W=0,H=0,F=0,cs=1,sn=0,raf=0,last=0,loc='',VO=0,ey=5.5,BXD=null,GRL=null,mmKey='',mmC=null,hdr=0,fcount=0,fa=0,fn=0,lt0=0;   // VO = desnivel del objeto que se dibuja · ey = altura de los ojos (sube y baja con el terreno)
+const cam=([X,h,Z])=>{const dx=X-P.x,dz=Z-P.y;return[dx*cs+dz*sn,h+VO-ey,dx*sn-dz*cs]};
+const clip=p=>{const o=[];for(let i=0;i<p.length;i++){const a=p[i],b=p[(i+1)%p.length],ia=a[2]>=NEAR,ib=b[2]>=NEAR;
+ if(ia)o.push(a);if(ia!==ib){const t=(NEAR-a[2])/(b[2]-a[2]);o.push([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,NEAR])}}return o};
+const TX=new Float64Array(16),TY=new Float64Array(16),TZ=new Float64Array(16);
+function poly(pts,fill,stroke){
+ const n=pts.length;let ok=true;
+ for(let i=0;i<n;i++){const p=pts[i],dx=p[0]-P.x,dz=p[2]-P.y;TX[i]=dx*cs+dz*sn;TY[i]=p[1]+VO-ey;TZ[i]=dx*sn-dz*cs;if(TZ[i]<NEAR)ok=false}
+ if(ok){   // camino rápido: todo delante de la cámara
+  let aL=true,aR=true,aT=true,aB=true;const hw=W/2,hh=H/2;g.beginPath();
+  for(let i=0;i<n;i++){const z=TZ[i],sx=hw+TX[i]/z*F,sy=hh-TY[i]/z*F;if(sx>=0)aL=false;if(sx<=W)aR=false;if(sy>=0)aT=false;if(sy<=H)aB=false;i?g.lineTo(sx,sy):g.moveTo(sx,sy)}
+  if(aL||aR||aT||aB)return;   // fuera de la pantalla: no se rellena
+  g.closePath();g.fillStyle=fill;g.fill();if(stroke){g.strokeStyle=stroke;g.lineWidth=1;g.stroke()}
+  return}
+ const c=clip(pts.map(cam));if(c.length<3)return;
+ g.beginPath();c.forEach(([x,y,z],i)=>{const sx=W/2+x/z*F,sy=H/2-y/z*F;i?g.lineTo(sx,sy):g.moveTo(sx,sy)});
+ g.closePath();g.fillStyle=fill;g.fill();if(stroke){g.strokeStyle=stroke;g.lineWidth=1;g.stroke()}}
+const col=(c,k,f)=>{const q=1-f;return'rgb('+((Math.min(255,c[0]*k)*q+223*f)|0)+','+((Math.min(255,c[1]*k)*q+229*f)|0)+','+((Math.min(255,c[2]*k)*q+237*f)|0)+')'};
+// NOMBRES DE AULAS EN EL MINIMAPA: [nombre, x, y] en coordenadas del croquis.
+// Edita, agrega o mueve aulas aquí (por ejemplo ['A27',700,1049]) y aparecerán solas en el minimapa.
+const AULAS=[['A1',760,1075],['A2',690,1075],['A3',550,1075],['A4',480,1075],['A5',480,1049],['A6',550,1049],
+ ['A7',475,933],['A8',565,933],['A9',630,933],['A10',925,933],['A11',1005,933],['A12',1085,933],['A13',925,908],['A14',1005,908],['A15',1085,908],
+ ['A16',700,748],['A17',608,610],['A18',660,610],['A19',293,324],['A20',360,324],['A21',428,324],['A22',495,324],
+ ['A23',1125,551],['A24',1203,551],['A25',1125,526],['A26',1203,526]];
+const mm={big:false};   // el minimapa se amplía/reduce al tocarlo
+const mmRect=()=>{const w=mm.big?Math.min(W-24,(H-96)/.898,680):Math.min(W*.36,150);return{w,h:w*.898,x:W-w-12,y:Math.max(74,(hdr||100)-26)}};   // arriba a la derecha, siempre debajo del encabezado
+function culled(x,y,w,h){let zm=-1e9,beh=false,aL=true,aR=true;
+ for(let k=0;k<4;k++){const X=k&1?x+w:x,Z=k&2?y+h:y,dx=X-P.x,dz=Z-P.y,zz=dx*sn-dz*cs;if(zz>zm)zm=zz;if(zz<NEAR)beh=true;else{const sx=W/2+(dx*cs+dz*sn)/zz*F;if(sx>-80)aL=false;if(sx<W+80)aR=false}}
+ return zm<NEAR||(!beh&&(aL||aR))}
+const near=b=>{const dx=Math.max(b.x-P.x,0,P.x-b.x-b.w),dz=Math.max(b.y-P.y,0,P.y-b.y-b.h);return dx*dx+dz*dz};
+// ---- CÓMO LLEGAR (3D): ruta caminable calculada con A* sobre una rejilla de obstáculos ----
+const CS=8,GX0=-30,GY0=110,NG=186,MG=161;
+let blk=null,rid=null,route3=[],dashes=[],lastP=null,len0=1,st='ok',lastMsg='';
+const gridB=()=>{if(blk)return blk;blk=new Uint8Array(NG*MG);for(let j=0;j<MG;j++)for(let i=0;i<NG;i++)blk[j*NG+i]=hit(GX0+i*CS+CS/2,GY0+j*CS+CS/2)?1:0;return blk};
+const cellOf=(x,y)=>[Math.max(0,Math.min(NG-1,Math.floor((x-GX0)/CS))),Math.max(0,Math.min(MG-1,Math.floor((y-GY0)/CS)))];
+function snapC([i,j]){const B=gridB();if(!B[j*NG+i])return[i,j];
+ for(let r=1;r<60;r++)for(let dj=-r;dj<=r;dj++)for(let di=-r;di<=r;di++){if(Math.max(Math.abs(di),Math.abs(dj))!==r)continue;const a=i+di,b=j+dj;if(a>=0&&b>=0&&a<NG&&b<MG&&!B[b*NG+a])return[a,b]}return null}
+function reachFrom(s){const B=gridB(),R=new Uint8Array(NG*MG),q=[s[1]*NG+s[0]];R[q[0]]=1;
+ for(let k=0;k<q.length;k++){const u=q[k],ui=u%NG,uj=(u/NG)|0;for(const [di,dj] of [[1,0],[-1,0],[0,1],[0,-1]]){const a=ui+di,b=uj+dj;if(a<0||b<0||a>=NG||b>=MG)continue;const v=b*NG+a;if(!R[v]&&!B[v]){R[v]=1;q.push(v)}}}return R}
+function snapR([i,j],R){if(R[j*NG+i])return[i,j];
+ for(let r=1;r<140;r++)for(let dj=-r;dj<=r;dj++)for(let di=-r;di<=r;di++){if(Math.max(Math.abs(di),Math.abs(dj))!==r)continue;const a=i+di,b=j+dj;if(a>=0&&b>=0&&a<NG&&b<MG&&R[b*NG+a])return[a,b]}return null}
+function astar(s,g){
+ const B=gridB(),gs=new Float32Array(NG*MG).fill(1e9),fr=new Int32Array(NG*MG).fill(-1),cl=new Uint8Array(NG*MG),hp=[];
+ const push=(f,i)=>{hp.push([f,i]);let k=hp.length-1;while(k>0){const p=(k-1)>>1;if(hp[p][0]<=hp[k][0])break;[hp[p],hp[k]]=[hp[k],hp[p]];k=p}};
+ const pop=()=>{const t=hp[0],l=hp.pop();if(hp.length){hp[0]=l;let k=0;for(;;){const a=2*k+1,b=a+1;let m=k;if(a<hp.length&&hp[a][0]<hp[m][0])m=a;if(b<hp.length&&hp[b][0]<hp[m][0])m=b;if(m===k)break;[hp[m],hp[k]]=[hp[k],hp[m]];k=m}}return t};
+ const si=s[1]*NG+s[0],gi=g[1]*NG+g[0];gs[si]=0;push(0,si);
+ while(hp.length){const [,u]=pop();if(cl[u])continue;cl[u]=1;if(u===gi)break;const ui=u%NG,uj=(u/NG)|0;
+  for(let dj=-1;dj<=1;dj++)for(let di=-1;di<=1;di++){if(!di&&!dj)continue;const a=ui+di,b=uj+dj;if(a<0||b<0||a>=NG||b>=MG)continue;const v=b*NG+a;if(B[v]||cl[v])continue;
+   if(di&&dj&&(B[uj*NG+a]||B[b*NG+ui]))continue;const ng=gs[u]+(di&&dj?1.414:1);
+   if(ng<gs[v]){gs[v]=ng;fr[v]=u;const dx=Math.abs(a-g[0]),dy=Math.abs(b-g[1]);push(ng+Math.max(dx,dy)+.414*Math.min(dx,dy),v)}}}
+ if(gi!==si&&fr[gi]<0)return null;
+ const out=[];for(let u=gi;u>=0;u=fr[u]){out.push([GX0+(u%NG)*CS+CS/2,GY0+((u/NG)|0)*CS+CS/2]);if(u===si)break}
+ out.reverse();
+ const clear=(a,b)=>{const n=Math.ceil(Math.hypot(b[0]-a[0],b[1]-a[1])/2);for(let t=1;t<n;t++)if(hit(a[0]+(b[0]-a[0])*t/n,a[1]+(b[1]-a[1])*t/n))return false;return true};
+ const sm=[out[0]];let i=0;while(i<out.length-1){let j=out.length-1;while(j>i+1&&!clear(out[i],out[j]))j--;sm.push(out[j]);i=j}
+ return sm;
+}
+function recompute(){
+ lastP=[P.x,P.y];route3=[];dashes=[];st='ok';
+ const z=Z.find(w=>w.id===rid);if(!z)return;
+ const nid=Object.keys(NODOS).find(k=>NODOS[k].zona===rid),r=z.g[0],gp=nid?NODOS[nid].xy:[r[0]+r[2]/2,r[1]+r[3]/2];
+ const s=snapC(cellOf(P.x,P.y)),R=s?reachFrom(s):null,e=s?snapR(cellOf(gp[0],gp[1]),R):null,pts=s&&e?astar(s,e):null;   // si el destino está dentro de un edificio o cerrado, se llega al punto accesible más cercano
+ if(!pts){st='none';return}
+ const end=pts[pts.length-1];
+ if(Math.hypot(P.x-end[0],P.y-end[1])<22){st='arrived';return}
+ route3=[[P.x,P.y]].concat(pts.slice(1));
+ for(let i=1;i<route3.length;i++){const [x1,z1]=route3[i-1],[x2,z2]=route3[i],dx=x2-x1,dz=z2-z1,l=Math.hypot(dx,dz)||1,ux=dx/l,uz=dz/l,nx=-uz*2.6,nz=ux*2.6;
+  for(let s=0;s<l;s+=14){const e2=Math.min(s+9,l),ax=x1+ux*s,az=z1+uz*s,bx=x1+ux*e2,bz=z1+uz*e2;
+   dashes.push({cx:(ax+bx)/2,cz:(az+bz)/2,oy:lvl((ax+bx)/2,(az+bz)/2),q:[[ax+nx,1.8,az+nz],[bx+nx,1.8,bz+nz],[bx-nx,1.8,bz-nz],[ax-nx,1.8,az-nz]]})}}
+}
+const routeLen=()=>{let t=0;for(let i=1;i<route3.length;i++)t+=Math.hypot(route3[i][0]-route3[i-1][0],route3[i][1]-route3[i-1][1]);return t};
+const routeItems=()=>dashes.map(d=>[(d.cx-P.x)**2+(d.cz-P.y)**2,{dash:d.q,oy:d.oy}]);
+function routeTick(){
+ if(!rid)return;
+ if(!lastP||Math.hypot(P.x-lastP[0],P.y-lastP[1])>20)recompute();
+ const z=Z.find(w=>w.id===rid);let msg;
+ if(st==='none')msg=`No se puede llegar caminando a ${z.n} desde aquí (zona cerrada o fuera del plantel).`;
+ else if(st==='arrived')msg=`¡Llegaste a ${z.n}!`;
+ else{
+  const pct=Math.round(Math.min(1,routeLen()/len0)*100),nx=route3.find((p,i)=>i>0&&Math.hypot(p[0]-P.x,p[1]-P.y)>14)||route3[route3.length-1];
+  const vx=nx[0]-P.x,vy=nx[1]-P.y,rel=Math.atan2(vx*Math.cos(P.yaw)+vy*Math.sin(P.yaw),vx*Math.sin(P.yaw)-vy*Math.cos(P.yaw))*57.3;
+  msg=`Ruta a ${z.n}${rid==='futbol'?' (hasta el barandal)':''} · te falta ${pct}% · ${Math.abs(rel)>135?'da la vuelta':Math.abs(rel)<25?'sigue de frente':rel>0?'gira a la derecha':'gira a la izquierda'}`}
+ if(msg!==lastMsg){lastMsg=msg;const t=$('#tdr');t.hidden=false;t.textContent=msg;$('#tgo').hidden=st!=='ok'}
+}
+function drawPin(){
+ if(!rid||!route3.length)return;
+ const e=route3[route3.length-1],a=cam([e[0],lvl(e[0],e[1]),e[1]]),b=cam([e[0],lvl(e[0],e[1])+64,e[1]]);if(a[2]<4||b[2]<4)return;
+ const pj=c=>[W/2+c[0]/c[2]*F,H/2-c[1]/c[2]*F],[x0,y0]=pj(a),[x1,y1]=pj(b),z=Z.find(w=>w.id===rid),t='DESTINO: '+z.l.toUpperCase();
+ g.strokeStyle='#2563eb';g.lineWidth=3;g.beginPath();g.moveTo(x0,y0);g.lineTo(x1,y1);g.stroke();
+ g.fillStyle='#2563eb';g.strokeStyle='#fff';g.lineWidth=2;g.beginPath();g.arc(x1,y1,9,0,7);g.fill();g.stroke();
+ g.font='700 12px system-ui,sans-serif';g.textAlign='center';g.fillStyle='#1d4ed8';g.lineWidth=3;g.strokeStyle='rgba(255,255,255,.9)';g.strokeText(t,x1,y1-16);g.fillText(t,x1,y1-16);
+}
+window.Rt3={set(id){rid=id||null;lastP=null;route3=[];dashes=[];lastMsg='';st='ok';
+ if(!rid){$('#tdr').hidden=true;$('#tgo').hidden=true;return}
+ recompute();len0=Math.max(1,routeLen())}};
+$('#tgo').onclick=()=>{if(route3.length>1){tour.r=route3.map(p=>[p[0],p[1]]);tour.i=1;setTour(true);}};   // "Llévame hasta allá": camina sola por la ruta
+const SIGNS=[['SALIDA DE AUTOS',1048,35,203],['SOLO CON TARJETA DE TRABAJO · REGISTRO',1050,24,212],['ENTRADA ESTUDIANTIL · CON CREDENCIAL',658,31,1264],['DETECTOR DE METALES',659,20,1261]];   // letreros flotantes: [texto, x, altura, y]
+function drawSigns(){SIGNS.forEach(([t,x,hh,z])=>{const c=cam([x,hh+lvl(x,z),z]);if(c[2]<10||c[2]>500)return;
+ const s=Math.max(9,Math.min(15,F*8/c[2])),px=W/2+c[0]/c[2]*F,py=H/2-c[1]/c[2]*F;
+ g.font=`700 ${s}px system-ui,sans-serif`;g.textAlign='center';g.lineWidth=3;g.strokeStyle='rgba(255,255,255,.9)';g.fillStyle='#b3312d';g.strokeText(t,px,py);g.fillText(t,px,py)})}
+const court=(b,f)=>{const {x,y,w,h,ht}=b,y1=ht+.12,lc=col([255,255,255],1,f),i=10,
+ Ls=[[x+i,y+i,x+w-i,y+i],[x+w-i,y+i,x+w-i,y+h-i],[x+w-i,y+h-i,x+i,y+h-i],[x+i,y+h-i,x+i,y+i]].concat(w>h?[[x+w/2,y+i,x+w/2,y+h-i]]:[[x+i,y+h/2,x+w-i,y+h/2]]);
+ Ls.forEach(([x1,z1,x2,z2])=>{const dx=x2-x1,dz=z2-z1,l=Math.hypot(dx,dz),nx=-dz/l*.9,nz=dx/l*.9;
+  poly([[x1+nx,y1,z1+nz],[x2+nx,y1,z2+nz],[x2-nx,y1,z2-nz],[x1-nx,y1,z1-nz]],lc)})};
+function drawMM(c,m,s){const mX=x=>(x-45)*s+.5,mY=y=>(y-140)*s+.5;
+ c.fillStyle='rgba(255,255,255,.95)';c.strokeStyle='#6b7685';c.lineWidth=1;c.fillRect(.5,.5,m.w,m.h);c.strokeRect(.5,.5,m.w,m.h);
+ BX.forEach(b=>{if(!b.z.id)return;c.fillStyle=b.z.c;c.strokeStyle='rgba(40,52,70,.5)';c.lineWidth=.6;const x=mX(b.x),y=mY(b.y),w=Math.max(1.5,b.w*s),hh=Math.max(1.5,b.h*s);c.fillRect(x,y,w,hh);c.strokeRect(x,y,w,hh)});
+ c.textAlign='center';c.textBaseline='middle';
+ c.font=`700 ${Math.max(6,Math.min(15,34*s))}px system-ui,sans-serif`;c.fillStyle='rgba(31,58,95,.45)';
+ Z.forEach(z=>{const r=z.g[0];if(z.id.length<2)c.fillText(z.id,mX(r[0])+7,mY(r[1])-4)});   // letras de edificios
+ c.font=`600 ${Math.max(5,Math.min(10,16*s))}px system-ui,sans-serif`;c.fillStyle='rgba(31,58,95,.7)';
+ Z.forEach(z=>{const r=z.g[0],t=z.l.toUpperCase();if(mm.big&&z.id.length>1&&c.measureText(t).width<r[2]*s*.95)c.fillText(t,mX(r[0]+r[2]/2),mY(r[1]+r[3]/2))});   // nombres de áreas
+ c.fillStyle='#1f3a5f';c.font=`700 ${Math.max(5.5,Math.min(12,22*s))}px system-ui,sans-serif`;
+ if(mm.big)AULAS.forEach(([n,x,y])=>c.fillText(n,mX(x),mY(y)))}   // nombres de aulas
+function draw(){
+ g.setTransform(dpr,0,0,dpr,0,0);
+ const sk=g.createLinearGradient(0,0,0,H/2);sk.addColorStop(0,'#8fa9c6');sk.addColorStop(1,'#e3eaf2');
+ g.fillStyle=sk;g.fillRect(0,0,W,H/2);g.fillStyle='#141518';g.fillRect(0,H/2,W,H/2);
+ const gp=e=>{const hh=e[2]||0;if(hh>ey+.5)return;poly(e[3]||(e[3]=e[1].map(([x,z])=>[x,hh,z])),e[0])};   // no se dibuja el suelo que queda por encima de los ojos
+ if(!GRL)GRL=[GR.filter(e=>e[2]<0),GR.filter(e=>!(e[2]<0))];
+ GRL[0].forEach(gp);GRL[1].forEach(gp);
+ for(let i=1;i<RUTA_3D.length;i++){const [x1,z1]=RUTA_3D[i-1],[x2,z2]=RUTA_3D[i],dx=x2-x1,dz=z2-z1,l=Math.hypot(dx,dz),nx=-dz/l*11,nz=dx/l*11;   // andadores
+  {const gh=lvl((x1+x2)/2,(z1+z2)/2)+.05;if(gh<=ey&&Math.abs(lvl(x1,z1)-lvl(x2,z2))<.5)poly([[x1+nx,gh,z1+nz],[x2+nx,gh,z2+nz],[x2-nx,gh,z2-nz],[x1-nx,gh,z1-nz]],'#3a3d43')}}
+ (BXD||(BXD=BX.filter(b=>b.z.id!=='futbol'))).map(b=>[(b.ht<2.5&&!(b.b>0))?1e12:near(b),b]).concat(routeItems()).sort((a,b)=>b[0]-a[0]).forEach(([d,b])=>{
+  if(b.dash){VO=b.oy||0;poly(b.dash,'#2563eb');VO=0;return}
+  VO=b.oy||0;
+  const {x,y,w,h,ht,c,z}=b,b0=b.b||0,dist=Math.sqrt(near(b)),f=Math.min(.7,dist/1800),ed=(ht>3&&dist<320)?'rgba(40,52,70,.5)':null,tall=z.t!==undefined&&ht>10,R=ALT.has(z.id)?RGL:RG;
+  if((dist>120&&dist>Math.max(w,h,ht-b0)*22)||culled(x,y,w,h))return;   // objetos diminutos a lo lejos, detrás de ti o fuera de pantalla
+  if(ey>ht+VO)poly([[x,ht,y],[x+w,ht,y],[x+w,ht,y+h],[x,ht,y+h]],col(c,1.05,f),ed);
+  if(b0+VO>ey)poly([[x,b0,y],[x+w,b0,y],[x+w,b0,y+h],[x,b0,y+h]],col(c,.62,f),ed);   // techo visto desde abajo (pasos y copas de árboles)
+  if(z.t==='Deportes'&&ey>ht+VO)court(b,f);
+  const S=[[P.y<y,[[x,y],[x+w,y]],.88,'n'],[P.y>y+h,[[x,y+h],[x+w,y+h]],.88,'s'],[P.x<x,[[x,y],[x,y+h]],.74,'w'],[P.x>x+w,[[x+w,y],[x+w,y+h]],.74,'e']];
+  S.forEach(([vis,[a,e],k,cd])=>{if(!vis||(b.only&&b.only!==cd))return;
+   const Q=(h0,h1,cc,u0=0,u1=1)=>poly([[a[0]+(e[0]-a[0])*u0,h0,a[1]+(e[1]-a[1])*u0],[a[0]+(e[0]-a[0])*u1,h0,a[1]+(e[1]-a[1])*u1],[a[0]+(e[0]-a[0])*u1,h1,a[1]+(e[1]-a[1])*u1],[a[0]+(e[0]-a[0])*u0,h1,a[1]+(e[1]-a[1])*u0]],cc);
+   if(b.reja){const L=Math.hypot(e[0]-a[0],e[1]-a[1]);Q(0,5,col([190,186,176],k,f));Q(ht-2,ht,col(c,k,f));   // reja: base, travesaño y barras
+    if(dist<380){const pr=((P.x-a[0])*(e[0]-a[0])+(P.y-a[1])*(e[1]-a[1]))/L,u0=Math.max(0,pr-170),u1=Math.min(L,pr+170);
+     for(let s=Math.ceil(u0/7)*7;s<u1;s+=7)Q(5,ht-2,col(c,k,f),(s-.9)/L,(s+.9)/L)}return}
+   poly([[a[0],b0,a[1]],[e[0],b0,e[1]],[e[0],ht,e[1]],[a[0],ht,a[1]]],col(c,k,f),ed);
+   if(b.panel&&a[1]===y+h&&e[1]===y+h)Q(6,ht-8,col(rgbOf(b.panel),k,f),.1,.9);   // panel azul
+   if(!tall)return;
+   const zh=/Aula|Administraci/.test(z.t)?9:4.5,L0=Math.hypot(e[0]-a[0],e[1]-a[1]);
+   if(b0<1)Q(0,zh,col(R.zocalo,k,f));Q(ht-4,ht,col(R.acento,k,f));Q(ht-5,ht-4,col(R.filete,k,f));Q(b0,ht,col(R.acento,k,f),0,3/L0);Q(b0,ht,col(R.acento,k,f),1-3/L0,1);   // base de ladrillo rojo, cornisa y columnas rojas
+   if(z.p)Q(ht/2-1.6,ht/2+1.6,col(R.acento,k,f));                       // línea de entrepiso (2 plantas)
+   if(dist>380)return;
+   const L=Math.hypot(e[0]-a[0],e[1]-a[1]),n=(b.pass&&(cd==='e'||cd==='w'))?0:Math.floor(L/17),gl=col([88,116,140],k+.1,f),fc=col([244,243,238],k,f);
+   for(let r=(b0>10?1:0);r<(z.p?2:1);r++){const y0=z.p?(r?27:11):(ht<20?4.5:9),wh=z.p?9:(ht<20?5.5:8);for(let i=0;i<n;i++){const u=(i+.5)/n,uw=3.4/L,fr=.8/L;Q(y0-.7,y0+wh+.7,fc,u-uw-fr,u+uw+fr);Q(y0,y0+wh,gl,u-uw,u+uw)}}   // ventanas con marco blanco
+   if(L>60||ht<20)Q(0,Math.min(12,ht-4),col(R.puerta,k,f),.5-4/L,.5+4/L);            // puerta
+  });
+ });
+ VO=0;
+ Z.forEach(z=>{const [x,y,w,h]=z.g[0],c=cam([x+w/2,z.ht+7+(z.oy||0),y+h/2]);if(c[2]<25||c[2]>900)return;
+  const s=Math.max(9,Math.min(17,F*7/c[2]));g.font=`600 ${s}px system-ui,sans-serif`;g.textAlign='center';
+  g.lineWidth=3;g.strokeStyle='rgba(255,255,255,.85)';g.fillStyle='#1f3a5f';
+  const t=z.l.toUpperCase(),px=W/2+c[0]/c[2]*F,py=H/2-c[1]/c[2]*F;g.strokeText(t,px,py);g.fillText(t,px,py)});
+ {const c=cam([658,40,1280]);if(c[2]>20&&c[2]<700){const s=Math.max(9,Math.min(16,F*8/c[2])),px=W/2+c[0]/c[2]*F,py=H/2-c[1]/c[2]*F;   // letrero del arco
+  g.font=`700 ${s}px system-ui,sans-serif`;g.fillStyle='#1f3a5f';g.strokeStyle='rgba(255,255,255,.9)';g.lineWidth=3;g.strokeText('CBTis 123',px,py);g.fillText('CBTis 123',px,py)}}
+ drawPin();drawSigns();
+ if(P.y>1298){const c=cam([755,18,1299]);if(c[2]>6&&c[2]<700){const s=Math.min(180,F*20/c[2]),px=W/2+c[0]/c[2]*F,py=H/2-c[1]/c[2]*F;   // letras "123" del portal
+  g.font=`800 ${s}px system-ui,sans-serif`;g.textAlign='center';g.textBaseline='middle';g.lineWidth=Math.max(1,s/14);g.strokeStyle='#6d737b';g.fillStyle='#e9ebef';g.strokeText('123',px,py);g.fillText('123',px,py)}}
+ // minimapa pequeño (toca para ampliar y ver los nombres de las aulas)
+ const m=mmRect(),s=m.w/1370,mX=x=>m.x+(x-45)*s,mY=y=>m.y+(y-140)*s,key=m.w.toFixed(1)+'|'+mm.big+'|'+dpr;
+ if(mmKey!==key){mmKey=key;const c=mmC||(mmC=document.createElement('canvas'));c.width=Math.ceil((m.w+2)*dpr);c.height=Math.ceil((m.h+2)*dpr);const c2=c.getContext('2d');c2.setTransform(dpr,0,0,dpr,0,0);drawMM(c2,m,s)}   // parte fija del minimapa en caché
+ g.drawImage(mmC,m.x-.5,m.y-.5,mmC.width/dpr,mmC.height/dpr);
+ g.textAlign='center';g.textBaseline='middle';
+ if(route3.length>1){g.strokeStyle='#2563eb';g.lineWidth=2;g.beginPath();route3.forEach(([x,y],i)=>i?g.lineTo(mX(x),mY(y)):g.moveTo(mX(x),mY(y)));g.stroke();const e=route3[route3.length-1];g.fillStyle='#2563eb';g.beginPath();g.arc(mX(e[0]),mY(e[1]),3.5,0,7);g.fill()}   // ruta en el minimapa
+ const px=mX(P.x),py=mY(P.y),dx=sn,dy=-cs;
+ g.fillStyle='#c2410c';g.beginPath();g.moveTo(px+dx*8,py+dy*8);g.lineTo(px-dx*4-dy*4,py-dy*4+dx*4);g.lineTo(px-dx*4+dy*4,py-dy*4-dx*4);g.closePath();g.fill();
+ g.font='600 8px system-ui,sans-serif';g.fillStyle='#5d6978';g.fillText(mm.big?'TOCA PARA REDUCIR':'TOCA PARA VER AULAS',m.x+m.w/2,m.y+m.h+9);
+}
+const hit=(x,y)=>BX.some(b=>(b.ht>10&&!b.nc||b.wall)&&x>b.x-6&&x<b.x+b.w+6&&y>b.y-6&&y<b.y+b.h+6);
+function move(dx,dz){if(!hit(P.x+dx,P.y+dz)){P.x+=dx;P.y+=dz}else if(!hit(P.x+dx,P.y))P.x+=dx;else if(!hit(P.x,P.y+dz))P.y+=dz;P.x=Math.max(-30,Math.min(1445,P.x));P.y=Math.max(110,Math.min(1392,P.y))}
+function setTour(on){tour.on=on;$('#tpt').textContent=on?'Detener':'Recorrido automático';$('#tpi').innerHTML=on?'<path d="M7 5v14M17 5v14"/>':'<path d="M7 4l13 8-13 8z"/>'}
+function update(dt){
+ const mv=(hd.f||ky.f?1:0)-(hd.b||ky.b?1:0),st=(ky.sr?1:0)-(ky.sl?1:0),tn=(hd.tr||ky.tr?1:0)-(hd.tl||ky.tl?1:0);
+ if((mv||st||tn)&&tour.on)setTour(false);
+ if(tour.on){
+  const R=tour.r||RUTA_3D,T=R[tour.i],vx=T[0]-P.x,vy=T[1]-P.y,d=Math.hypot(vx,vy),sp=110*dt;
+  if(d<=sp){P.x=T[0];P.y=T[1];if(++tour.i>=R.length)setTour(false)}else{P.x+=vx/d*sp;P.y+=vy/d*sp}
+  const want=Math.atan2(vx,-vy),df=((want-P.yaw+Math.PI*3)%(2*Math.PI))-Math.PI;P.yaw+=df*Math.min(1,dt*3.5);
+ }else{
+  P.yaw+=tn*1.7*dt;const sp=95*dt,a=Math.sin(P.yaw),b=Math.cos(P.yaw);
+  move((a*mv+b*st)*sp,(-b*mv+a*st)*sp);
+ }
+ cs=Math.cos(P.yaw);sn=Math.sin(P.yaw);
+ ey+=((EYE+lvl(P.x,P.y))-ey)*Math.min(1,dt*9);   // los ojos suben y bajan con escaleras y rampa
+ routeTick();let bn=null,bd=1e9;for(const k in NODOS){const n=NODOS[k];if(n.ni)continue;const d=Math.hypot(n.xy[0]-P.x,n.xy[1]-P.y);if(d<bd){bd=d;bn=n}}
+ if(bn&&bn.titulo!==loc){loc=bn.titulo;$('#tdt').textContent=loc}
+}
+function frame(t){raf=requestAnimationFrame(frame);
+ if(lt0){fa+=Math.min(100,t-lt0);fn++}lt0=t;
+ if(fn>=45){const av=fa/fn;fa=0;fn=0;   // si el promedio es de menos de ~38 cuadros/s baja la resolución; si sobra potencia la sube
+  if(av>26&&dpr>.55){dpr=Math.max(.55,dpr*.8);size()}else if(av<12.5&&dpr<DPRMAX){dpr=Math.min(DPRMAX,dpr*1.1);size()}}
+ if((fcount++&15)===0)hdr=(document.querySelector('#td .sv-top')||{}).offsetHeight||0;
+ const dt=Math.min(.05,(t-last)/1000||0);last=t;update(dt);draw()}
+function size(){W=cv.clientWidth;H=cv.clientHeight;F=W>H?H*1.1:W*1.05;cv.width=W*dpr|0;cv.height=H*dpr|0}
+function openTD(){el.classList.add('open');el.setAttribute('aria-hidden','false');size();last=performance.now();lt0=0;fa=0;fn=0;cancelAnimationFrame(raf);raf=requestAnimationFrame(frame)}
+function closeTD(){el.classList.remove('open');el.setAttribute('aria-hidden','true');cancelAnimationFrame(raf);setTour(false);youAt([P.x,P.y])}
+$('#t3b').onclick=openTD;$('#tdx').onclick=closeTD;
+$('#tp').onclick=()=>{if(tour.on)return setTour(false);P.x=RUTA_3D[0][0];P.y=RUTA_3D[0][1];P.yaw=0;tour.i=1;tour.r=null;setTour(true)};
+[['tf','f'],['tb','b'],['tl','tl'],['tr','tr']].forEach(([id,k])=>{const b=$('#'+id);
+ b.addEventListener('pointerdown',e=>{e.preventDefault();hd[k]=1});
+ ['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,()=>hd[k]=0))});
+let dr=0,mvd=0;
+cv.addEventListener('pointerdown',e=>{dr=e.clientX;mvd=0;cv.setPointerCapture(e.pointerId)});
+cv.addEventListener('pointermove',e=>{if(!dr)return;const d=e.clientX-dr;mvd+=Math.abs(d);dr=e.clientX;if(!mm.big){P.yaw+=d*.006;if(tour.on)setTour(false)}});
+cv.addEventListener('pointerup',e=>{if(mvd<6){const r=cv.getBoundingClientRect(),m=mmRect(),x=e.clientX-r.left,y=e.clientY-r.top;
+ if(mm.big||(x>m.x&&x<m.x+m.w&&y>m.y&&y<m.y+m.h))mm.big=!mm.big}dr=0});
+cv.addEventListener('pointercancel',()=>dr=0);
+addEventListener('resize',()=>el.classList.contains('open')&&size());
+const KM={w:'f',arrowup:'f',s:'b',arrowdown:'b',a:'sl',d:'sr',arrowleft:'tl',q:'tl',arrowright:'tr',e:'tr'};
+addEventListener('keydown',e=>{if(!el.classList.contains('open'))return;const k=KM[e.key.toLowerCase()];
+ if(k){e.preventDefault();ky[k]=1}else if(e.key==='Escape')closeTD()});
+addEventListener('keyup',e=>{const k=KM[e.key.toLowerCase()];if(k)ky[k]=0});
+})();
+
+// =====================================================================
+//  CÓMO LLEGAR · destino compartido por el recorrido 3D y la vista de calle (fotos)
+//  - En 3D: línea azul en el suelo, pin del destino, minimapa y botón "Llévame hasta allá".
+//  - En la vista de calle: la flecha del siguiente paso parpadea en azul y un aviso dice qué hacer.
+//  La ruta de las fotos usa los nodos (NODOS) y sus conexiones f / b / l / r.
+// =====================================================================
+let dest=null;
+const INSTR={f:'sigue adelante',b:'regresa',l:'gira a la izquierda',r:'gira a la derecha'};
+function nodeFor(id){
+ if(AULAS[id])return AULAS[id].nodo;
+ const f=Object.keys(NODOS).find(k=>NODOS[k].zona===id);if(f)return f;
+ const z=Z.find(w=>w.id===id),r=z.g[0],cx=r[0]+r[2]/2,cy=r[1]+r[3]/2;let best=null,bd=1e9;
+ for(const k in NODOS){if(NODOS[k].ni)continue;const d=Math.hypot(NODOS[k].xy[0]-cx,NODOS[k].xy[1]-cy);if(d<bd){bd=d;best=k}}return best;
+}
+function dijkstra(a,b){
+ const d={[a]:0},pr={},Q=new Set(Object.keys(NODOS));
+ while(Q.size){let u=null;for(const k of Q)if(d[k]!==undefined&&(u===null||d[k]<d[u]))u=k;if(u===null)break;Q.delete(u);if(u===b)break;
+  for(const k of ['f','b','l','r']){const v=NODOS[u][k];if(!v)continue;const w=Math.hypot(NODOS[u].xy[0]-NODOS[v].xy[0],NODOS[u].xy[1]-NODOS[v].xy[1])+1;
+   if(d[v]===undefined||d[u]+w<d[v]){d[v]=d[u]+w;pr[v]=u}}}
+ if(d[b]===undefined)return null;const p=[b];while(p[0]!==a)p.unshift(pr[p[0]]);return p;
+}
+function svRoute(){
+ const ban=$('#svr'),K4=['f','b','l','r'];K4.forEach(k=>$('#n'+k).classList.remove('hint'));
+ if(!dest||!svCur){ban.hidden=true;return}
+ const z=AULAS[dest]?{n:AULAS[dest].t}:Z.find(w=>w.id===dest),goal=nodeFor(dest);ban.hidden=false;
+ if(svCur===goal){ban.textContent=`¡Llegaste a ${z.n}!`;return}
+ const p=dijkstra(svCur,goal);
+ if(!p||p.length<2){ban.textContent=`No hay ruta con fotos hacia ${z.n}`;return}
+ const k=K4.find(q=>NODOS[svCur][q]===p[1]);$('#n'+k).classList.add('hint');
+ ban.textContent=`Ruta a ${z.n} · ${p.length-1} paso(s) · ${INSTR[k]} hacia ${NODOS[p[1]].titulo}`;
+}
+function setDest(id){
+ dest=id||null;['tdsel','svdest'].forEach(s=>$('#'+s).value=dest||'');
+ if(window.Rt3)Rt3.set(dest&&AULAS[dest]?AULAS[dest].zona:dest);svRoute();
+}
+(()=>{const opts=Z.slice().sort((a,b)=>a.n.localeCompare(b.n,'es')),html='<option value="">¿Cómo llegar a…?</option>'+opts.map(z=>`<option value="${z.id}">${z.n}</option>`).join('')+'<optgroup label="Aulas">'+Object.keys(AULAS).map(n=>`<option value="${n}">${AULAS[n].t}</option>`).join('')+'</optgroup>';
+ ['tdsel','svdest'].forEach(s=>{const el=$('#'+s);el.innerHTML=html;el.onchange=()=>setDest(el.value)})})();
+$('#svh').onclick=()=>{setDest(cur);$('#t3b').click()};   // botón de la tarjeta: abre el 3D con la ruta hacia esa zona
+
+// ---- VER AULAS por planta: lista de aulas A1 a A26 de la Planta Baja y de la Planta Alta (sale de los textos p / k de cada zona) ----
+(()=>{
+ const AF={b:[],a:[]};
+ Z.forEach(z=>{
+  if(z.p)['b','a'].forEach(f=>(z.p[f].match(/A\d+/g)||[]).forEach(n=>AF[f].push([n,z.id])));
+  else(z.k.match(/\ba\d+\b/g)||[]).forEach(n=>AF.b.push([n.toUpperCase(),z.id]));   // edificios de un solo piso = Planta Baja
+ });
+ ['b','a'].forEach(f=>AF[f].sort((x,y)=>+x[0].slice(1)-+y[0].slice(1)));
+ let cf='b';const box=$('#aulg'),tabs=document.querySelectorAll('.aul .seg2 button');
+ function pintar(){box.innerHTML='';
+  AF[cf].forEach(([n,id])=>{const z=Z.find(w=>w.id===id),b=document.createElement('button');b.className='ch';
+   b.innerHTML=`<b>${n}</b><small>${z.n.replace(/^Edificio /,'Ed. ')}</small>`;
+   b.onclick=()=>{openDr(false);select(id,cf)};box.appendChild(b)});
+  $('#aulc').textContent=AF[cf].length+' aulas'}
+ tabs.forEach(t=>t.onclick=()=>{cf=t.dataset.f;tabs.forEach(x=>x.classList.toggle('on',x===t));pintar()});
+ pintar();
+})();
+
+// =====================================================================
+//  MIS FOTOS: cargar fotos desde la galería o la cámara del teléfono, sin carpetas ni servidor
+//  1) Abre la Vista de calle y ve al lugar que quieras (menú "Ir a…" o con las flechas).
+//  2) Toca "Mis fotos" → "Elegir foto de la galería" (o "Tomar foto ahora").
+//  3) La foto se reduce (hasta 2048 px; las panorámicas hasta 5000 px), reemplaza a la provisional y se guarda en este navegador (si el teléfono lo permite).
+//  El modo Día/Noche decide si la foto es de día o de noche. "Descargar mis fotos (.zip)" crea los archivos con los
+//  nombres exactos (images/..., images/noche/...) para subirlos después a la página web.
+// =====================================================================
+// Crea un .zip sin compresión a partir de [[ruta, Uint8Array], ...] (las fotos JPG ya vienen comprimidas)
+function crearZip(items){
+ const T=new Uint32Array(256);for(let i=0;i<256;i++){let c=i;for(let j=0;j<8;j++)c=c&1?0xEDB88320^(c>>>1):c>>>1;T[i]=c>>>0}
+ const crc=d=>{let c=~0;for(let i=0;i<d.length;i++)c=T[(c^d[i])&255]^(c>>>8);return(~c)>>>0};
+ const enc=new TextEncoder(),parts=[],cd=[],d=new Date();let off=0;
+ const dt=(d.getHours()<<11)|(d.getMinutes()<<5)|(d.getSeconds()>>1),dd=((d.getFullYear()-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate();
+ for(const [name,data] of items){
+  const nb=enc.encode(name),c=crc(data),h=new DataView(new ArrayBuffer(30)),g=new DataView(new ArrayBuffer(46));
+  h.setUint32(0,0x04034b50,true);h.setUint16(4,20,true);h.setUint16(6,0x0800,true);h.setUint16(10,dt,true);h.setUint16(12,dd,true);h.setUint32(14,c,true);h.setUint32(18,data.length,true);h.setUint32(22,data.length,true);h.setUint16(26,nb.length,true);
+  parts.push(new Uint8Array(h.buffer),nb,data);
+  g.setUint32(0,0x02014b50,true);g.setUint16(4,20,true);g.setUint16(6,20,true);g.setUint16(8,0x0800,true);g.setUint16(12,dt,true);g.setUint16(14,dd,true);g.setUint32(16,c,true);g.setUint32(20,data.length,true);g.setUint32(24,data.length,true);g.setUint16(28,nb.length,true);g.setUint32(42,off,true);
+  cd.push(new Uint8Array(g.buffer),nb);off+=30+nb.length+data.length}
+ let cs=0;cd.forEach(p=>cs+=p.length);
+ const e=new DataView(new ArrayBuffer(22));e.setUint32(0,0x06054b50,true);e.setUint16(8,items.length,true);e.setUint16(10,items.length,true);e.setUint32(12,cs,true);e.setUint32(16,off,true);
+ return new Blob([...parts,...cd,new Uint8Array(e.buffer)],{type:'application/zip'});
+}
+
+(()=>{
+ const pm=$('#pm'),pf=$('#pf'),pfc=$('#pfc'),st=$('#pst');let db=null,persist=false;
+ const ids=()=>Object.keys(NODOS),total=ids().length,key=()=>svCur+svMode;
+ const have=()=>ids().filter(id=>MYB[id+'dia']||MYB[id+'noche']).length;
+ function refresh(){
+  const n=NODOS[svCur];if(!n)return;
+  $('#pmt').textContent=n.titulo+' · foto de '+(svMode==='noche'?'noche':'día');
+  $('#pmq').hidden=!MYB[key()];
+  st.textContent=have()+' de '+total+' lugares con foto propia · '+(persist?'se guardan en este teléfono.':'no se pueden guardar al cerrar esta página: descarga el .zip para no perderlas.');
+ }
+ $('#pb').onclick=()=>{pm.hidden=!pm.hidden;if(!pm.hidden){if(!svCur)svGo(SV_INICIO,null);refresh()}};
+ $('#pg').onclick=()=>pf.click();$('#pc').onclick=()=>pfc.click();
+ function poner(id,m,blob){
+  if(MYU[id+m])URL.revokeObjectURL(MYU[id+m]);
+  MYB[id+m]=blob;MYU[id+m]=URL.createObjectURL(blob);delete cache[id+'dia'];delete cache[id+'noche'];
+ }
+ function guardar(id,m,blob){if(!db)return;try{const os=db.transaction('f','readwrite').objectStore('f');blob?os.put(blob,id+m):os.delete(id+m)}catch(e){}}
+ const reducir=file=>new Promise((ok,no)=>{const u=URL.createObjectURL(file),im=new Image();
+  im.onload=()=>{const s=Math.min(1,(im.naturalWidth/im.naturalHeight>=2.2?5000:2048)/Math.max(im.naturalWidth,im.naturalHeight)),c=document.createElement('canvas');
+   c.width=Math.round(im.naturalWidth*s);c.height=Math.round(im.naturalHeight*s);c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+   URL.revokeObjectURL(u);c.toBlob(b=>b?ok(b):no(),'image/jpeg',.85)};
+  im.onerror=()=>{URL.revokeObjectURL(u);no()};im.src=u});
+ async function elegida(e){
+  const f=e.target.files[0];e.target.value='';if(!f||!svCur)return;
+  st.textContent='Procesando foto…';
+  try{const b=await reducir(f),id=svCur,m=svMode;poner(id,m,b);guardar(id,m,b);svGo(id,null);refresh()}
+  catch(x){st.textContent='No se pudo leer esa imagen. Prueba con otra foto (JPG o PNG).'}
+ }
+ pf.onchange=elegida;pfc.onchange=elegida;
+ $('#pmq').onclick=()=>{const id=svCur,m=svMode,k=id+m;if(MYU[k])URL.revokeObjectURL(MYU[k]);delete MYU[k];delete MYB[k];guardar(id,m,null);delete cache[id+'dia'];delete cache[id+'noche'];svGo(id,null);refresh()};
+ $('#pmn').onclick=()=>{const L=ids(),i=L.indexOf(svCur),sig=L.slice(i+1).concat(L.slice(0,i)).find(id=>!MYB[id+svMode]);
+  if(sig){svGo(sig,null);setTimeout(refresh,50)}else st.textContent='Ya hay foto en todos los lugares para este modo.'};
+ $('#pz').onclick=async()=>{
+  const items=[];
+  for(const k in MYB){const m=k.endsWith('noche')?'noche':'dia',n=NODOS[k.slice(0,k.length-m.length)];if(n)items.push([m==='noche'?n.imgNoche:n.imgDia,new Uint8Array(await MYB[k].arrayBuffer())])}
+  if(!items.length){st.textContent='Todavía no has cargado ninguna foto.';return}
+  const a=document.createElement('a');a.href=URL.createObjectURL(crearZip(items));a.download='mis-fotos-cbtis123.zip';document.body.appendChild(a);a.click();a.remove();
+  st.textContent='Listo: se descargó mis-fotos-cbtis123.zip ('+items.length+' fotos).';
+ };
+ // guardado en el navegador (IndexedDB); si no está disponible, las fotos duran mientras la página esté abierta
+ try{const rq=indexedDB.open('cbtis123-fotos',1);
+  rq.onupgradeneeded=()=>rq.result.createObjectStore('f');
+  rq.onerror=()=>{persist=false};
+  rq.onsuccess=()=>{db=rq.result;persist=true;
+   db.transaction('f').objectStore('f').openCursor().onsuccess=e=>{const c=e.target.result;
+    if(c){MYB[c.key]=c.value;MYU[c.key]=URL.createObjectURL(c.value);c.continue()}else{if(svCur){delete cache[svCur+'dia'];delete cache[svCur+'noche'];svGo(svCur,null)}}}};
+ }catch(e){persist=false}
+ // cerrar el menú al cerrar el visor
+ const sx=$('#svx'),prev=sx.onclick;sx.onclick=()=>{pm.hidden=true;prev&&prev()};
+})();
+
+// ---- ROSA DE LOS VIENTOS, LEYENDA Y BARRA DE ESCALA ----
+(()=>{const lb=$('#lgb'),lp=$('#lgp'),eb=$('#esc2');$('#rosa svg').style.transform=`rotate(${NORTE_EN_PLANO}deg)`;
+ lb.onclick=()=>{lp.hidden=!lp.hidden;lb.setAttribute('aria-expanded',!lp.hidden)};
+ if(UNIDADES_POR_METRO>0){eb.hidden=false;const N=[1,2,5,10,20,25,50,100,200];   // barra de escala: se recalcula con cada zoom
+  onVista=()=>{const pm=UNIDADES_POR_METRO*K,m=N.filter(n=>n*pm<=130).pop()||N[0];$('#escb').style.width=m*pm+'px';$('#esct').textContent=m+' m'};onVista()}
+})();
+
+// ---- TRAZAR RUTA EN EL PLANO 2D + TIEMPO ESTIMADO (de cualquier lugar a cualquier lugar) ----
+// El camino se calcula sobre el propio plano con una malla de 5 unidades: se rodea cualquier edificio o taller
+// (no se atraviesan), se respetan el muro perimetral y el muro de contención (solo se pasa por las escaleras y
+// rampas: x 528-580, 820-848 y 1118-1148) y se cruza por los pasos de los edificios C y D. Canchas, plaza y
+// estacionamientos sí se pueden cruzar. La cancha de fútbol está fuera del plantel: se llega saliendo por el Acceso
+// principal y rodeando por la Av. Lázaro Cárdenas. Si un lugar queda fuera de la malla se usa la ruta de la vista de calle (NODOS).
+(()=>{const b=$('#tt'),c=$('#ttc'),fr=$('#tfrom'),to=$('#tto'),res=$('#ttr'),pr=$('#pr'),g=mk('g',{id:'rt2'},pr.parentNode);pr.parentNode.insertBefore(g,pr);
+ const opts=Z.slice().sort((a,b)=>a.n.localeCompare(b.n,'es')).map(z=>`<option value="${z.id}">${z.n}</option>`).join('')+'<optgroup label="Aulas">'+Object.keys(AULAS).map(n=>`<option value="${n}">${AULAS[n].t}</option>`).join('')+'</optgroup>';
+ fr.innerHTML=opts;to.innerHTML='<option value="">Elige el destino…</option>'+opts;fr.value='acceso';
+ const nom=id=>AULAS[id]?AULAS[id].t:Z.find(w=>w.id===id).n,set=o=>{c.hidden=!o;b.setAttribute('aria-expanded',o)};
+
+ // ---------- marcas de escaleras y rampas (pasos entre el nivel norte y el sur) ----------
+ {const e=mk('g',{id:'esc'},pr.parentNode);pr.parentNode.insertBefore(e,pr);e.style.pointerEvents='none';
+  [[530,24,'ESCALERAS',892],[820,28,'ESCALERAS',892]].forEach(([x,w,t,ty])=>{mk('rect',{x,y:862,width:w,height:18,rx:1.5,fill:'#c8c2b8',stroke:'#8d8576','stroke-width':.8},e);
+   for(let i=1;i<6;i++)mk('line',{x1:x+1,x2:x+w-1,y1:862+i*3,y2:862+i*3,stroke:'#8d8576','stroke-width':.6},e);
+   mk('text',{x:x+w/2,y:ty,'text-anchor':'middle','font-size':5.6,'font-weight':700,fill:'#5b6b80'},e).textContent=t});
+  [[557,20,902],[1123,22,892]].forEach(([x,w,ty])=>{mk('path',{d:`M${x} 880V862L${x+w} 880Z`,fill:'#d9d4ca',stroke:'#8d8576','stroke-width':.8},e);
+   mk('text',{x:x+w/2,y:ty,'text-anchor':'middle','font-size':5.6,'font-weight':700,fill:'#5b6b80'},e).textContent='RAMPA'})}
+ // ---------- malla de caminos ----------
+ const CS=5,GX=0,GY=100,GW=285,GH=260,PERI=[[45,148],[1030,201.7],[1090,205],[1060,488],[1408,488],[1408,611],[1222,611],[1195,1300],[420,1300],[420,590],[100,590],[100,375],[47,375],[47,148]],
+  HUECOS=[[528,580],[820,848],[1118,1148]],PASOSCD=[[596,648,1034,1093],[596,648,917,971]];
+ let blk=null;
+ const buildGrid=()=>{blk=new Uint8Array(GW*GH);
+  const dentro=(x,y)=>{let k=false;for(let i=0,j=PERI.length-1;i<PERI.length;j=i++){const[xi,yi]=PERI[i],[xj,yj]=PERI[j];if((yi>y)!==(yj>y)&&x<(xj-xi)*(y-yi)/(yj-yi)+xi)k=!k}return k};
+  const dseg=(x,y,p,q)=>{const dx=q[0]-p[0],dy=q[1]-p[1],t=Math.max(0,Math.min(1,((x-p[0])*dx+(y-p[1])*dy)/(dx*dx+dy*dy)));return Math.hypot(x-p[0]-t*dx,y-p[1]-t*dy)};
+  const cel=(x0,y0,x1,y1,v)=>{for(let j=Math.max(0,Math.floor((y0-GY)/CS));j<=Math.min(GH-1,Math.floor((y1-GY)/CS));j++)for(let i=Math.max(0,Math.floor((x0-GX)/CS));i<=Math.min(GW-1,Math.floor((x1-GX)/CS));i++){const x=GX+(i+.5)*CS,y=GY+(j+.5)*CS;if(x>=x0&&x<=x1&&y>=y0&&y<=y1)blk[j*GW+i]=v}};
+  for(let j=0;j<GH;j++)for(let i=0;i<GW;i++){const x=GX+(i+.5)*CS,y=GY+(j+.5)*CS;let v=!dentro(x,y);
+   if(!v)for(let k=0;k<PERI.length;k++)if(dseg(x,y,PERI[k],PERI[(k+1)%PERI.length])<3.5){v=true;break}
+   if(!v&&y>=876&&y<=884&&x>=420&&x<=1215&&!HUECOS.some(([p,q])=>x>p&&x<q))v=true;
+   blk[j*GW+i]=v?1:0}
+  Z.forEach(z=>{if(/Deportes|Espacio|Estacionamiento|Acceso|Fuera/.test(z.t))return;z.g.forEach(([x,y,w,h])=>cel(x-3,y-3,x+w+3,y+h+3,1))});   // edificios y talleres: no se atraviesan
+  PASOSCD.forEach(([x0,x1,y0,y1])=>cel(x0,y0,x1,y1,0));
+  cel(612,1288,704,1318,0);      // puerta del Acceso principal
+  cel(0,1318,1420,1372,0);       // Av. Lázaro Cárdenas (calle)
+  cel(50,637,414,1318,0)};       // cancha de fútbol y su explanada: están fuera del plantel, se llega por la calle                                                                                       // pasos de los edificios C y D
+ const libre=(x,y)=>{const i=Math.floor((x-GX)/CS),j=Math.floor((y-GY)/CS);return i>=0&&j>=0&&i<GW&&j<GH&&!blk[j*GW+i]};
+ const vista=(p,q)=>{const n=Math.ceil(Math.hypot(q[0]-p[0],q[1]-p[1])/2);for(let k=0;k<=n;k++)if(!libre(p[0]+(q[0]-p[0])*k/n,p[1]+(q[1]-p[1])*k/n))return false;return true};
+ // celdas libres alrededor de un lugar (puertas posibles) con su costo hasta el punto del lugar
+ const celdas=id=>{const zid=AULAS[id]?AULAS[id].zona:id,z=Z.find(w=>w.id===zid),pt=AULAS[id]?NODOS[AULAS[id].nodo].xy:[z.g[0][0]+z.g[0][2]/2,z.g[0][1]+z.g[0][3]/2],m=new Map();
+  z.g.forEach(([x,y,w,h])=>{for(let j=Math.max(0,Math.floor((y-9-GY)/CS));j<=Math.min(GH-1,Math.floor((y+h+9-GY)/CS));j++)for(let i=Math.max(0,Math.floor((x-9-GX)/CS));i<=Math.min(GW-1,Math.floor((x+w+9-GX)/CS));i++){
+   const cx=GX+(i+.5)*CS,cy=GY+(j+.5)*CS;if(!blk[j*GW+i]&&cx>=x-9&&cx<=x+w+9&&cy>=y-9&&cy<=y+h+9)m.set(j*GW+i,Math.hypot(cx-pt[0],cy-pt[1]))}});
+  return m};
+ function camino(A,B){if(!blk)buildGrid();const S=celdas(A),T=celdas(B);if(!S.size||!T.size)return null;
+  const D=new Float64Array(GW*GH).fill(1e9),P=new Int32Array(GW*GH).fill(-1),H=[];
+  const push=(c,i)=>{H.push([c,i]);let k=H.length-1;while(k>0){const q=(k-1)>>1;if(H[q][0]<=H[k][0])break;[H[q],H[k]]=[H[k],H[q]];k=q}};
+  const pop=()=>{const t=H[0],l=H.pop();if(H.length){H[0]=l;let k=0;for(;;){let a=2*k+1,b=a+1,m=k;if(a<H.length&&H[a][0]<H[m][0])m=a;if(b<H.length&&H[b][0]<H[m][0])m=b;if(m===k)break;[H[m],H[k]]=[H[k],H[m]];k=m}}return t};
+  S.forEach((pen,i)=>{D[i]=pen;push(pen,i)});let best=1e9,bi=-1;
+  while(H.length){const[d,u]=pop();if(d>D[u])continue;if(d>=best)break;
+   if(T.has(u)&&d+T.get(u)<best){best=d+T.get(u);bi=u}
+   const ux=u%GW,uy=(u/GW)|0;
+   for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){if(!dx&&!dy)continue;const x=ux+dx,y=uy+dy;if(x<0||y<0||x>=GW||y>=GH)continue;const v=y*GW+x;if(blk[v])continue;
+    if(dx&&dy&&(blk[uy*GW+x]||blk[y*GW+ux]))continue;const nd=d+(dx&&dy?1.4142:1)*CS;if(nd<D[v]){D[v]=nd;P[v]=u;push(nd,v)}}}
+  if(bi<0)return null;
+  const celdasP=[];for(let u=bi;u>=0;u=P[u])celdasP.unshift([GX+((u%GW)+.5)*CS,GY+(((u/GW)|0)+.5)*CS]);
+  const pts=[celdasP[0]];let ia=0;                                                 // quita escalones: segmentos rectos que no cruzan obstáculos
+  while(ia<celdasP.length-1){let ib=celdasP.length-1;while(ib>ia+1&&!vista(celdasP[ia],celdasP[ib]))ib--;pts.push(celdasP[ib]);ia=ib}
+  const s0=S.get(celdasP.length?((celdasP[0][1]-GY)/CS|0)*GW+((celdasP[0][0]-GX)/CS|0):0)||0;
+  return{pts,extra:s0+T.get(bi)}}
+
+ // ---------- tiempo e indicaciones ----------
+ const DIR=['norte','noreste','este','sureste','sur','suroeste','oeste','noroeste'],cap=t=>t[0].toUpperCase()+t.slice(1);
+ const cerca=(x,y)=>{let m=null,md=40;Z.forEach(z=>{if(z.id==='futbol')return;z.g.forEach(([a,b,w,h])=>{const d=Math.hypot(Math.max(a-x,0,x-a-w),Math.max(b-y,0,y-b-h));if(d<md){md=d;m=z.n}})});return m};
+ // El sur (entrada y pasillo central) está a MAYOR nivel que el norte (cafetería, talleres): hacia el sur se SUBE, hacia el norte se BAJA.
+ const tipo=(p,q)=>{const x=p[0]+(q[0]-p[0])*(880-p[1])/(q[1]-p[1]);return x<590?'las escaleras o la rampa junto a la Cafetería':x<900?'las escaleras del lado este, junto al Edificio J':'la rampa del pasillo este'};
+ const piso=id=>/Planta Alta/.test(nom(id));
+ const pasos=(pts,A,B)=>{const o=[];if(piso(A))o.push('Baja a la planta baja por las escaleras del edificio.');
+  for(let i=1;i<pts.length;i++){const p=pts[i-1],q=pts[i],dx=q[0]-p[0],dy=q[1]-p[1];if(Math.hypot(dx,dy)<14&&i<pts.length-1)continue;
+   const dir=DIR[Math.round(Math.atan2(dx,-dy)/(Math.PI/4)+8)%8],cruz=(p[1]-880)*(q[1]-880)<0&&p[0]>420&&p[0]<1220,
+    paso=PASOSCD.findIndex(([x0,x1,y0,y1])=>Math.min(p[1],q[1])<y1&&Math.max(p[1],q[1])>y0&&Math.min(p[0],q[0])<x1&&Math.max(p[0],q[0])>x0),
+    ref=cerca((p[0]+q[0])/2,(p[1]+q[1])/2),gx=q[1]!==p[1]?p[0]+(dx)*(1300-p[1])/dy:p[0],pta=gx>600&&gx<712,sal=pta&&p[1]<1300&&q[1]>=1300,ent=pta&&q[1]<1300&&p[1]>=1300,calle=!sal&&!ent&&(p[1]+q[1])/2>1316&&p[0]>0;
+   o.push(cap(sal?`sal del plantel por el Acceso principal (hacia el ${dir})`:ent?`entra al plantel por el Acceso principal (hacia el ${dir})`:calle?`camina por la Av. Lázaro Cárdenas hacia el ${dir}`:paso>=0&&!cruz?`cruza por el paso del Edificio ${paso?'D':'C'} hacia el ${dir}`:cruz?`${dy>0?'sube':'baja'} por ${tipo(p,q)} (hacia el ${dir})`:`camina hacia el ${dir}`)+(ref&&!cruz&&!sal&&!ent&&!calle?`, junto a ${ref}`:'')+'.')}
+  o.push(`Llegas a ${nom(B)}${piso(B)?' y subes por las escaleras del edificio a la planta alta':''}.`);return o};
+ const minutos=(pts,extra,A,B)=>{let d=extra;for(let i=1;i<pts.length;i++)d+=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]);
+  let t=d/(UNIDADES_POR_METRO||7)/72;                       // unidades del plano → metros (≈7 por defecto) · paso normal ≈ 72 m/min
+  for(let i=1;i<pts.length;i++)if((pts[i-1][1]-880)*(pts[i][1]-880)<0&&pts[i][0]>420&&pts[i][0]<1220)t+=.25;   // escaleras / rampa
+  if(piso(A))t+=.3;if(piso(B))t+=.3;return t*1.25+.5};     // margen por tránsito, giros y puertas
+ // respaldo: ruta por los puntos de la vista de calle
+ const porNodos=(A,B)=>{const p=dijkstra(nodeFor(A),nodeFor(B));if(!p||p.length<2)return null;let d=0;const pts=p.map(n=>NODOS[n].xy);
+  for(let i=1;i<pts.length;i++)d+=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]);return{pts,extra:0,t:(d/(UNIDADES_POR_METRO||7)/72+(piso(A)?.3:0)+(piso(B)?.3:0))*1.25+.5,
+   texto:p.slice(1).map((n,i)=>{const k=['f','b','l','r'].find(q=>NODOS[p[i]][q]===n),s=INSTR[k]||'continúa';return cap(s)+' hacia '+NODOS[n].titulo+'.'})}};
+
+ const limpiar=()=>{g.innerHTML='';res.hidden=true};
+ function calc(){const A=fr.value,B=to.value;if(!B){limpiar();return}
+  res.hidden=false;g.innerHTML='';const sv=$('#ttv'),dt=$('#ttr details');sv.hidden=dt.hidden=false;
+  if(A===B){$('#ttm').textContent='Ya estás en ese lugar';$('#ttd').textContent='';sv.hidden=dt.hidden=true;return}
+  let r=camino(A,B),t,txt;
+  if(r){t=minutos(r.pts,r.extra,A,B);txt=pasos(r.pts,A,B)}else{r=porNodos(A,B);if(r){t=r.t;txt=r.texto}}
+  if(!r){$('#ttm').textContent='Sin ruta registrada';$('#ttd').textContent=`No hay un camino entre ${nom(A)} y ${nom(B)}.`;sv.hidden=dt.hidden=true;return}
+  const lo=Math.floor(t);$('#ttm').textContent=t<1?'Menos de 1 minuto caminando':`Aprox. ${lo} a ${lo+1} minutos caminando`;
+  $('#ttd').textContent=`De ${nom(A)} a ${nom(B)}`;$('#tts').innerHTML=txt.map(x=>`<li>${x}</li>`).join('');
+  const pts=r.pts,d='M'+pts.map(q=>q.join(' ')).join('L');
+  mk('path',{d,class:'rth'},g);mk('path',{d,class:'rtl'},g);
+  mk('circle',{cx:pts[0][0],cy:pts[0][1],r:9,class:'rts'},g);
+  const pin=mk('g',{transform:`translate(${pts[pts.length-1][0]} ${pts[pts.length-1][1]})`},g);mk('circle',{r:13,class:'rte'},pin);mk('circle',{r:4.5,fill:'#fff'},pin);
+  // encuadra la ruta en el espacio libre debajo del panel
+  const R=svg.getBoundingClientRect(),xs=pts.map(q=>q[0]),ys=pts.map(q=>q[1]),x0=Math.min(...xs)-50,x1=Math.max(...xs)+50,y0=Math.min(...ys)-50,y1=Math.max(...ys)+50,
+   top=Math.max(84,c.getBoundingClientRect().bottom-R.top+12),bw=R.width-40,bh=R.height-top-24,k=clamp(Math.min(bw/(x1-x0),bh/(y1-y0)));
+  go(20+(bw-(x1-x0)*k)/2-x0*k,top+(bh-(y1-y0)*k)/2-y0*k,k)}
+ b.onclick=()=>set(c.hidden);$('#ttx').onclick=()=>set(false);fr.onchange=to.onchange=calc;
+ $('#ttl').onclick=()=>{to.value='';limpiar();reset()};
+ $('#ttv').onclick=()=>{set(false);openSV(nodeFor(fr.value));setDest(to.value)};   // mismo recorrido en Street View
+ $('#rt2b').onclick=()=>{const id=cur;clear();set(true);to.value=id;calc()};      // desde la tarjeta de cualquier lugar
+})();
+
+// ---- GESTOS EN LA FOTO: 1 dedo = girar/mover · 2 dedos = acercar · rueda del mouse = acercar · doble toque = restablecer ----
+(()=>{
+ const P2=new Map();let d0=0,z0=1,tDown=0,xDown=0,yDown=0,tLast=0;
+ const cap=e=>e.target&&e.target.closest&&e.target.closest('button,select,input,#pm,.sv-top');
+ const cur=()=>LY[svAct];
+ svEl.addEventListener('pointerdown',e=>{if(cap(e))return;try{svEl.setPointerCapture(e.pointerId)}catch(x){}
+  P2.set(e.pointerId,[e.clientX,e.clientY]);tDown=performance.now();xDown=e.clientX;yDown=e.clientY;
+  if(P2.size===2){const [a,b]=[...P2.values()];d0=Math.hypot(a[0]-b[0],a[1]-b[1]);z0=V.z}});
+ svEl.addEventListener('pointermove',e=>{if(!P2.has(e.pointerId))return;const p=P2.get(e.pointerId),l=cur();if(!l._f)return;
+  if(P2.size===1){const {dw,dh}=medir(l);V.fx-=(e.clientX-p[0])/dw;V.fy-=(e.clientY-p[1])/dh;colocar(l)}
+  P2.set(e.pointerId,[e.clientX,e.clientY]);
+  if(P2.size===2&&d0){const [a,b]=[...P2.values()],d=Math.hypot(a[0]-b[0],a[1]-b[1]);V.z=Math.max(1,Math.min(5,z0*d/d0));colocar(l)}});
+ const fin=e=>{if(P2.size===1&&P2.has(e.pointerId)&&e.type==='pointerup'&&Math.hypot(e.clientX-xDown,e.clientY-yDown)<8&&performance.now()-tDown<300){
+   const t=performance.now();if(t-tLast<350){V.z=1;V.fx=.5;V.fy=.5;colocar(cur());tLast=0}else tLast=t}
+  P2.delete(e.pointerId);d0=0};
+ svEl.addEventListener('pointerup',fin);svEl.addEventListener('pointercancel',fin);
+ svEl.addEventListener('wheel',e=>{if(cap(e))return;e.preventDefault();V.z=Math.max(1,Math.min(5,V.z*Math.exp(-e.deltaY*.0015)));colocar(cur())},{passive:false});
+ addEventListener('resize',()=>colocar(cur()));
+ // aviso breve la primera vez que se abre el visor
+ let visto=false;const abrir=openSV;
+ openSV=function(id){abrir(id);if(!visto){visto=true;const v=$('#vh');v.hidden=false;v.style.opacity=1;setTimeout(()=>{v.style.opacity=0},4200);setTimeout(()=>{v.hidden=true},4900)}};
+})();
+</script>
+</body>
+</html>

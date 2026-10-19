@@ -177,15 +177,12 @@ html,body{background:#eef0f2}
 #you circle.pl{animation:pl 1.8s ease-out infinite;transform-box:fill-box;transform-origin:center}
 @keyframes pl{from{transform:scale(.6);opacity:.8}to{transform:scale(2.4);opacity:0}}
 
-/* ===== Recorrido completo · día/noche ===== */
+/* ===== Recorrido completo ===== */
 .ph{transition:opacity .7s ease,transform .9s cubic-bezier(.2,.8,.2,1),filter .6s ease}
 .sv-top small{margin:0 0 3px}
 .sv-top h2{line-height:1.25}.ub{font-weight:500;opacity:.7}
 #svsel{margin-top:8px;max-width:240px;background:rgba(10,20,34,.6);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:8px;padding:7px 8px;font:600 .74rem system-ui,sans-serif}
 #svsel option{color:#1c2633}
-.sm{display:flex;align-items:center;gap:8px;width:auto;padding:0 14px;right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 32px);font:700 .76rem system-ui,sans-serif;text-transform:uppercase;letter-spacing:.7px}
-.sm svg{width:22px;height:22px}
-#sv.noche .sm{background:rgba(31,58,95,.92)}
 
 /* ===== Botón "Ver vista del aula" en la tarjeta ===== */
 .sec{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:8px;padding:12px;border-radius:8px;border:1px solid var(--ac);background:#fff;color:var(--ac);font-weight:700;font-size:.9rem;animation:rise .4s var(--ease);transition:background .2s}
@@ -275,6 +272,13 @@ html,body{background:#0f1726}
 .z.on .lb{fill:#fff}.z.on .sb{fill:#dbe6fb}
 .rth{stroke:#0b1220;opacity:.9}
 .rtl{stroke:#ffd23f}
+
+/* ===== v36 · logo del CBTis (esquina superior izquierda) ===== */
+#logo{position:fixed;left:12px;top:calc(env(safe-area-inset-top,0px) + 12px);z-index:4;width:54px;height:54px;border-radius:10px;display:grid;place-items:center;padding:4px;pointer-events:none}
+#logo img{max-width:100%;max-height:100%;object-fit:contain;display:block}
+#logo.sin img{display:none}
+#logo.sin::after{content:"CBTis\A 123";white-space:pre;text-align:center;font:800 .74rem/1.1 system-ui,sans-serif;color:var(--ink)}
+@media(max-width:700px){.bar{margin-left:64px}}
 </style>
 </head>
 <body>
@@ -295,6 +299,7 @@ html,body{background:#0f1726}
 </g>
 </svg>
 
+<div id="logo" class="glass"><img src="images/logo-cbtis.png" alt="Logo del CBTis 123" onerror="var l=['images/logo-cbtis.jpg','logo-cbtis.png','logo-cbtis.jpg'],i=+(this.dataset.i||0);if(i<l.length){this.dataset.i=i+1;this.src=l[i]}else{this.parentNode.classList.add('sin')}"></div>
 <div class="top">
  <div class="bar glass">
   <button class="ib" id="mb" aria-label="Menú"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
@@ -393,7 +398,6 @@ html,body{background:#0f1726}
  <div class="ph" id="p0"></div><div class="ph" id="p1"></div>
  <div class="sv-top"><div><small>Vista de calle · CBTis 123</small><h2><span class="ub">Ubicación:</span> <span id="svt"></span></h2><select id="svsel" aria-label="Ir a un lugar"></select><select id="svdest" aria-label="¿Cómo llegar a…?"></select><div id="svr" class="rt" hidden></div></div><button class="sv-x" id="svx"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>Cerrar / Volver al plano</button></div>
  <button class="nv" id="nf" aria-label="Adelante" title="Adelante"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button><button class="nv" id="nb" aria-label="Atrás" title="Atrás"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg></button><button class="nv" id="nl" aria-label="Izquierda" title="Izquierda"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button><button class="nv" id="nr" aria-label="Derecha" title="Derecha"><svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
- <button class="nv sm" id="sm" aria-label="Cambiar entre modo día y noche"><svg id="isun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><svg id="imoon" viewBox="0 0 24 24" hidden><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg><span id="smt">Día</span></button>
  <button class="nv pb" id="pb" aria-label="Mis fotos"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13.5" r="3.5"/></svg><span>Mis fotos</span></button>
  <div id="vh" hidden>Arrastra para mirar alrededor · pellizca para acercar · doble toque para restablecer</div>
  <div id="pm" hidden><b id="pmt"></b><button id="pg">Elegir foto de la galería</button><button id="pc">Tomar foto ahora</button><button id="pmq">Quitar mi foto de este lugar</button><button id="pmn">Ir al siguiente lugar sin foto</button><button id="pz">Descargar mis fotos (.zip)</button><small>Consejo: puedes usar fotos panorámicas; se giran arrastrando.</small><small id="pst"></small></div>
@@ -409,77 +413,77 @@ html,body{background:#0f1726}
 // =====================================================================
 //  LISTADO DE FOTOS QUE USA LA APP
 //  Estructura (junto a index.html):
-//      images/            <- foto de DÍA de cada lugar:    images/entrada.jpg
-//      images/noche/      <- foto de NOCHE (opcional):     images/noche/entrada.jpg
-//  Formato .jpg, nombres EXACTOS (minúsculas, sin espacios ni acentos; GitHub distingue mayúsculas de minúsculas).
-//  Si falta la foto de noche, se usa la de día oscurecida. Si falta la de día, se muestra una imagen provisional.
+//      images/            <- una foto por lugar:           images/entrada.jpg   (y el logo: images/logo-cbtis.png)
+//  Formato .jpg o .png (el mismo nombre con cualquiera de las dos extensiones), nombres EXACTOS (minúsculas, sin espacios ni acentos; GitHub distingue mayúsculas de minúsculas).
+//  Si falta una foto, se muestra una imagen provisional con el nombre del archivo que espera.
 //  Con "Mis fotos" (en Vista de calle) también puedes cargar fotos desde el teléfono y descargar un .zip con estos nombres.
 //
-//    ARCHIVO .jpg ..................... LUGAR
-//    calle.jpg......................... Calle · Av. Lázaro Cárdenas
-//    entrada.jpg....................... Entrada principal
-//    estacionamiento.jpg............... Estacionamiento sur
-//    sanitarios-p.jpg.................. Sanitarios P
-//    frente-a.jpg...................... Frente al Edificio A (Administrativo)
-//    cruce-c.jpg....................... Cruce frente al Edificio C
-//    pasillo-a.jpg..................... Pasillo Edificio A
-//    sanitarios-enie.jpg............... Sanitarios Ñ
-//    plaza.jpg......................... Plaza cívica
-//    pasillo-e.jpg..................... Pasillo Edificio E
-//    coma-cdex.jpg..................... Frente a Intendencia, COMA y CDEX (Edificio L)
-//    taller-auto.jpg................... Taller de Mtto. Automotriz y Almacén
-//    edificio-k.jpg.................... Edificio K (Aulas A23–A26)
-//    taller-servicios.jpg.............. Taller de Servicios Generales
-//    pasillo-c.jpg..................... Pasillo Edificio C
-//    pasillo-d.jpg..................... Pasillo Edificio D
-//    pasillo-j.jpg..................... Pasillo Edificio J (Cómputo e inglés)
-//    cafeteria.jpg..................... Cafetería
-//    cancha-futbol.jpg................. Cancha de fútbol
-//    pasillo-b.jpg..................... Pasillo Edificio B
-//    cancha-voleibol.jpg............... Cancha de voleibol
-//    taller-mecatronica.jpg............ Taller de Mecatrónica
-//    taller-electromecanica.jpg........ Taller de Electromecánica
-//    biblioteca-h.jpg.................. Edificio H · Biblioteca
-//    pasillo-i.jpg..................... Edificio I (Aulas A19–A22)
-//    lab-computo-3.jpg................. Laboratorio de cómputo 3 (Edificio O)
-//    estacionamiento-g.jpg............. Estacionamiento G
-//    cancha-basquetbol.jpg............. Cancha de basquetbol
-//    pasillo-entrada.jpg............... Pasillo de la entrada
-//    escaleras-c.jpg................... Escaleras del Edificio C (suben a Planta Alta)
-//    c-planta-alta.jpg................. Edificio C · Planta Alta (pasillo) (interior)
-//    escaleras-d.jpg................... Escaleras del Edificio D (suben a Planta Alta)
-//    d-planta-alta.jpg................. Edificio D · Planta Alta (pasillo) (interior)
-//    d-planta-baja.jpg................. Edificio D · Planta Baja (CAED y laboratorios)
-//    escaleras-e.jpg................... Escaleras del Edificio E (suben a Planta Alta)
-//    e-planta-alta.jpg................. Edificio E · Planta Alta (pasillo) (interior)
-//    escaleras-k.jpg................... Escaleras del Edificio K (suben a Planta Alta)
-//    k-planta-alta.jpg................. Edificio K · Planta Alta (pasillo) (interior)
-//    aula-a1.jpg....................... Aula A1 · Edificio C · Planta Baja (interior)
-//    aula-a2.jpg....................... Aula A2 · Edificio C · Planta Baja (interior)
-//    aula-a3.jpg....................... Aula A3 · Edificio C · Planta Baja (interior)
-//    aula-a4.jpg....................... Aula A4 · Edificio C · Planta Baja (interior)
-//    aula-a5.jpg....................... Aula A5 · Edificio C · Planta Alta (interior)
-//    aula-a6.jpg....................... Aula A6 · Edificio C · Planta Alta (interior)
-//    aula-a7.jpg....................... Aula A7 · Edificio D · Planta Alta (interior)
-//    aula-a8.jpg....................... Aula A8 · Edificio D · Planta Alta (interior)
-//    aula-a9.jpg....................... Aula A9 · Edificio D · Planta Alta (interior)
-//    aula-a10.jpg...................... Aula A10 · Edificio E · Planta Baja (interior)
-//    aula-a11.jpg...................... Aula A11 · Edificio E · Planta Baja (interior)
-//    aula-a12.jpg...................... Aula A12 · Edificio E · Planta Baja (interior)
-//    aula-a13.jpg...................... Aula A13 · Edificio E · Planta Alta (interior)
-//    aula-a14.jpg...................... Aula A14 · Edificio E · Planta Alta (interior)
-//    aula-a15.jpg...................... Aula A15 · Edificio E · Planta Alta (interior)
-//    aula-a16.jpg...................... Aula A16 · Edificio J · Planta Baja (interior)
-//    aula-a17.jpg...................... Aula A17 · Edificio B · Planta Baja (interior)
-//    aula-a18.jpg...................... Aula A18 · Edificio B · Planta Baja (interior)
-//    aula-a19.jpg...................... Aula A19 · Edificio I · Planta Baja (interior)
-//    aula-a20.jpg...................... Aula A20 · Edificio I · Planta Baja (interior)
-//    aula-a21.jpg...................... Aula A21 · Edificio I · Planta Baja (interior)
-//    aula-a22.jpg...................... Aula A22 · Edificio I · Planta Baja (interior)
-//    aula-a23.jpg...................... Aula A23 · Edificio K · Planta Baja (interior)
-//    aula-a24.jpg...................... Aula A24 · Edificio K · Planta Baja (interior)
-//    aula-a25.jpg...................... Aula A25 · Edificio K · Planta Alta (interior)
-//    aula-a26.jpg...................... Aula A26 · Edificio K · Planta Alta (interior)
+//    ARCHIVO ........................... LUGAR  (64 fotos + 1 logo = 65 imágenes)
+//    01  calle.jpg ........................ Calle · Av. Lázaro Cárdenas
+//    02  entrada.jpg ...................... Entrada principal
+//    03  estacionamiento.jpg .............. Estacionamiento sur
+//    04  sanitarios-p.jpg ................. Sanitarios P
+//    05  frente-a.jpg ..................... Frente al Edificio A (Administrativo)
+//    06  cruce-c.jpg ...................... Cruce frente al Edificio C
+//    07  pasillo-a.jpg .................... Pasillo Edificio A
+//    08  sanitarios-enie.jpg .............. Sanitarios Ñ
+//    09  plaza.jpg ........................ Plaza cívica
+//    10  pasillo-e.jpg .................... Pasillo Edificio E
+//    11  coma-cdex.jpg .................... Frente a Intendencia, COMA y CDEX (Edificio L)
+//    12  taller-auto.jpg .................. Taller de Mtto. Automotriz y Almacén
+//    13  edificio-k.jpg ................... Edificio K (Aulas A23–A26)
+//    14  taller-servicios.jpg ............. Taller de Servicios Generales
+//    15  pasillo-c.jpg .................... Pasillo Edificio C
+//    16  pasillo-d.jpg .................... Pasillo Edificio D
+//    17  pasillo-j.jpg .................... Pasillo Edificio J (Cómputo e inglés)
+//    18  cafeteria.jpg .................... Cafetería
+//    19  cancha-futbol.jpg ................ Cancha de fútbol
+//    20  pasillo-b.jpg .................... Pasillo Edificio B
+//    21  cancha-voleibol.jpg .............. Cancha de voleibol
+//    22  taller-mecatronica.jpg ........... Taller de Mecatrónica
+//    23  taller-electromecanica.jpg ....... Taller de Electromecánica
+//    24  biblioteca-h.jpg ................. Edificio H · Biblioteca
+//    25  pasillo-i.jpg .................... Edificio I (Aulas A19–A22)
+//    26  lab-computo-3.jpg ................ Laboratorio de cómputo 3 (Edificio O)
+//    27  estacionamiento-g.jpg ............ Estacionamiento G
+//    28  cancha-basquetbol.jpg ............ Cancha de basquetbol
+//    29  pasillo-entrada.jpg .............. Pasillo de la entrada
+//    30  escaleras-c.jpg .................. Escaleras del Edificio C (suben a Planta Alta)
+//    31  c-planta-alta.jpg ................ Edificio C · Planta Alta (pasillo)
+//    32  escaleras-d.jpg .................. Escaleras del Edificio D (suben a Planta Alta)
+//    33  d-planta-alta.jpg ................ Edificio D · Planta Alta (pasillo)
+//    34  d-planta-baja.jpg ................ Edificio D · Planta Baja (CAED y laboratorios)
+//    35  escaleras-e.jpg .................. Escaleras del Edificio E (suben a Planta Alta)
+//    36  e-planta-alta.jpg ................ Edificio E · Planta Alta (pasillo)
+//    37  escaleras-k.jpg .................. Escaleras del Edificio K (suben a Planta Alta)
+//    38  k-planta-alta.jpg ................ Edificio K · Planta Alta (pasillo)
+//    39  aula-a1.jpg ...................... Aula A1 · Edificio C · Planta Baja (interior)
+//    40  aula-a2.jpg ...................... Aula A2 · Edificio C · Planta Baja (interior)
+//    41  aula-a3.jpg ...................... Aula A3 · Edificio C · Planta Baja (interior)
+//    42  aula-a4.jpg ...................... Aula A4 · Edificio C · Planta Baja (interior)
+//    43  aula-a5.jpg ...................... Aula A5 · Edificio C · Planta Alta (interior)
+//    44  aula-a6.jpg ...................... Aula A6 · Edificio C · Planta Alta (interior)
+//    45  aula-a7.jpg ...................... Aula A7 · Edificio D · Planta Alta (interior)
+//    46  aula-a8.jpg ...................... Aula A8 · Edificio D · Planta Alta (interior)
+//    47  aula-a9.jpg ...................... Aula A9 · Edificio D · Planta Alta (interior)
+//    48  aula-a10.jpg ..................... Aula A10 · Edificio E · Planta Baja (interior)
+//    49  aula-a11.jpg ..................... Aula A11 · Edificio E · Planta Baja (interior)
+//    50  aula-a12.jpg ..................... Aula A12 · Edificio E · Planta Baja (interior)
+//    51  aula-a13.jpg ..................... Aula A13 · Edificio E · Planta Alta (interior)
+//    52  aula-a14.jpg ..................... Aula A14 · Edificio E · Planta Alta (interior)
+//    53  aula-a15.jpg ..................... Aula A15 · Edificio E · Planta Alta (interior)
+//    54  aula-a16.jpg ..................... Aula A16 · Edificio J · Planta Baja (interior)
+//    55  aula-a17.jpg ..................... Aula A17 · Edificio B · Planta Baja (interior)
+//    56  aula-a18.jpg ..................... Aula A18 · Edificio B · Planta Baja (interior)
+//    57  aula-a19.jpg ..................... Aula A19 · Edificio I · Planta Baja (interior)
+//    58  aula-a20.jpg ..................... Aula A20 · Edificio I · Planta Baja (interior)
+//    59  aula-a21.jpg ..................... Aula A21 · Edificio I · Planta Baja (interior)
+//    60  aula-a22.jpg ..................... Aula A22 · Edificio I · Planta Baja (interior)
+//    61  aula-a23.jpg ..................... Aula A23 · Edificio K · Planta Baja (interior)
+//    62  aula-a24.jpg ..................... Aula A24 · Edificio K · Planta Baja (interior)
+//    63  aula-a25.jpg ..................... Aula A25 · Edificio K · Planta Alta (interior)
+//    64  aula-a26.jpg ..................... Aula A26 · Edificio K · Planta Alta (interior)
+//    65  logo-cbtis.png ................... Logo del CBTis (esquina superior izquierda; también vale logo-cbtis.jpg)
 // =====================================================================
 
 // ---------------------------------------------------------------------
@@ -761,16 +765,13 @@ addEventListener('resize',()=>cur?select(cur,fl):reset());
 const f0=inicio();X=TX=f0.x+W*f0.k*.1;Y=TY=f0.y+H*f0.k*.1;K=TK=f0.k*.8;apply();go(f0.x,f0.y,f0.k);
 
 // =====================================================================
-//  VISTA DE CALLE · RECORRIDO VIRTUAL COMPLETO (día / noche)
+//  VISTA DE CALLE · RECORRIDO VIRTUAL COMPLETO
 //
 //  DÓNDE PONER TUS FOTOS
-//   1) Junto a este archivo HTML crea dos carpetas:  images/   y   images/noche/
-//   2) En cada nodo de la lista NODOS (más abajo) cambia los nombres:
-//        imgDia   : 'images/NOMBRE-DE-TU-FOTO-DE-DIA.jpg'
-//        imgNoche : 'images/noche/NOMBRE-DE-TU-FOTO-DE-NOCHE.jpg'
-//   3) Si todavía NO tienes la foto de noche (o el archivo no existe), el visor usa
-//      automáticamente la foto de día con un efecto oscuro. Si tampoco existe la de día,
-//      muestra una imagen provisional que indica la ruta esperada.
+//   1) Junto a este archivo HTML crea la carpeta:  images/
+//   2) En cada nodo de la lista NODOS (más abajo) el nombre de la foto es:
+//        imgDia : 'images/NOMBRE-DE-TU-FOTO.jpg'
+//   3) Si la foto no existe, el visor muestra una imagen provisional que indica el nombre esperado.
 //
 //  CÓMO FUNCIONAN LOS NODOS (cada nodo = un punto fotografiado)
 //   titulo : nombre que se muestra en "Ubicación: ..."
@@ -784,44 +785,44 @@ const f0=inicio();X=TX=f0.x+W*f0.k*.1;Y=TY=f0.y+H*f0.k*.1;K=TK=f0.k*.8;apply();g
 // =====================================================================
 const SV_INICIO='nodo_calle';   // nodo con el que abre el visor desde el marcador del plano
 const NODOS={
- nodo_calle:{titulo:'Calle · Av. Lázaro Cárdenas',imgDia:'images/calle.jpg',imgNoche:'images/noche/calle.jpg',xy:[658,1340],zona:null,f:'nodo_entrada',b:null,l:null,r:null},
- nodo_entrada:{titulo:'Entrada principal',imgDia:'images/entrada.jpg',imgNoche:'images/noche/entrada.jpg',xy:[658,1262],zona:'acceso',f:'nodo_frente_a',b:'nodo_calle',l:'nodo_sanitarios_p',r:'nodo_estacionamiento'},
- nodo_estacionamiento:{titulo:'Estacionamiento sur',imgDia:'images/estacionamiento.jpg',imgNoche:'images/noche/estacionamiento.jpg',xy:[890,1270],zona:'estS',f:null,b:null,l:'nodo_entrada',r:null},
- nodo_sanitarios_p:{titulo:'Sanitarios P',imgDia:'images/sanitarios-p.jpg',imgNoche:'images/noche/sanitarios-p.jpg',xy:[555,1262],zona:'P',f:null,b:null,l:null,r:'nodo_entrada'},
- nodo_frente_a:{titulo:'Frente al Edificio A (Administrativo)',imgDia:'images/frente-a.jpg',imgNoche:'images/noche/frente-a.jpg',xy:[660,1178],zona:'A',f:'nodo_cruce_c',b:'nodo_entrada',l:null,r:'nodo_pasillo_a'},
- nodo_cruce_c:{titulo:'Cruce frente al Edificio C',imgDia:'images/cruce-c.jpg',imgNoche:'images/noche/cruce-c.jpg',xy:[660,1115],zona:'C',f:'nodo_pasillo_c',b:'nodo_frente_a',l:null,r:'nodo_plaza'},
- nodo_pasillo_a:{titulo:'Pasillo Edificio A',imgDia:'images/pasillo-a.jpg',imgNoche:'images/noche/pasillo-a.jpg',xy:[800,1135],zona:'A',f:'nodo_plaza',b:null,l:'nodo_frente_a',r:'nodo_sanitarios_enie'},
- nodo_sanitarios_enie:{titulo:'Sanitarios Ñ',imgDia:'images/sanitarios-enie.jpg',imgNoche:'images/noche/sanitarios-enie.jpg',xy:[1090,1135],zona:'Ñ',f:null,b:null,l:'nodo_pasillo_a',r:null},
- nodo_plaza:{titulo:'Plaza cívica',imgDia:'images/plaza.jpg',imgNoche:'images/noche/plaza.jpg',xy:[978,1055],zona:'plaza',f:'nodo_edificio_e',b:'nodo_pasillo_a',l:'nodo_cruce_c',r:null},
- nodo_edificio_e:{titulo:'Pasillo Edificio E',imgDia:'images/pasillo-e.jpg',imgNoche:'images/noche/pasillo-e.jpg',xy:[1000,965],zona:'E',f:'nodo_l',b:'nodo_plaza',l:'nodo_pasillo_j',r:null},
- nodo_l:{titulo:'Frente a Intendencia, COMA y CDEX (Edificio L)',imgDia:'images/coma-cdex.jpg',imgNoche:'images/noche/coma-cdex.jpg',xy:[1100,835],zona:'L',f:'nodo_taller_auto',b:'nodo_edificio_e',l:null,r:null},
- nodo_taller_auto:{titulo:'Taller de Mtto. Automotriz y Almacén',imgDia:'images/taller-auto.jpg',imgNoche:'images/noche/taller-auto.jpg',xy:[900,762],zona:'auto',f:'nodo_k',b:'nodo_l',l:null,r:null},
- nodo_k:{titulo:'Edificio K (Aulas A23–A26)',imgDia:'images/edificio-k.jpg',imgNoche:'images/noche/edificio-k.jpg',xy:[1165,592],zona:'K',f:'nodo_n',b:'nodo_taller_auto',l:'nodo_electro',r:null},
- nodo_n:{titulo:'Taller de Servicios Generales',imgDia:'images/taller-servicios.jpg',imgNoche:'images/noche/taller-servicios.jpg',xy:[1330,585],zona:'N',f:null,b:'nodo_k',l:null,r:null},
- nodo_pasillo_c:{titulo:'Pasillo Edificio C',imgDia:'images/pasillo-c.jpg',imgNoche:'images/noche/pasillo-c.jpg',xy:[620,1063],zona:'C',f:'nodo_pasillo_d',b:'nodo_cruce_c',l:null,r:null},
- nodo_pasillo_d:{titulo:'Pasillo Edificio D',imgDia:'images/pasillo-d.jpg',imgNoche:'images/noche/pasillo-d.jpg',xy:[620,994],zona:'D',f:'nodo_pasillo_j',b:'nodo_pasillo_c',l:null,r:null},
- nodo_pasillo_j:{titulo:'Pasillo Edificio J (Cómputo e inglés)',imgDia:'images/pasillo-j.jpg',imgNoche:'images/noche/pasillo-j.jpg',xy:[690,895],zona:'J',f:'nodo_pasillo_b',b:'nodo_pasillo_d',l:'nodo_cafeteria',r:'nodo_edificio_e'},
- nodo_cafeteria:{titulo:'Cafetería',imgDia:'images/cafeteria.jpg',imgNoche:'images/noche/cafeteria.jpg',xy:[550,760],zona:'cafe',f:null,b:null,l:'nodo_futbol',r:'nodo_pasillo_j'},
- nodo_futbol:{titulo:'Cancha de fútbol',imgDia:'images/cancha-futbol.jpg',imgNoche:'images/noche/cancha-futbol.jpg',xy:[330,880],zona:'futbol',f:null,b:null,l:null,r:'nodo_cafeteria'},
- nodo_pasillo_b:{titulo:'Pasillo Edificio B',imgDia:'images/pasillo-b.jpg',imgNoche:'images/noche/pasillo-b.jpg',xy:[700,655],zona:'B',f:'nodo_cancha',b:'nodo_pasillo_j',l:null,r:null},
- nodo_cancha:{titulo:'Cancha de voleibol',imgDia:'images/cancha-voleibol.jpg',imgNoche:'images/noche/cancha-voleibol.jpg',xy:[600,545],zona:'cancha',f:'nodo_h',b:'nodo_pasillo_b',l:'nodo_mecatronica',r:'nodo_electro'},
- nodo_mecatronica:{titulo:'Taller de Mecatrónica',imgDia:'images/taller-mecatronica.jpg',imgNoche:'images/noche/taller-mecatronica.jpg',xy:[390,590],zona:'M',f:null,b:null,l:null,r:'nodo_cancha'},
- nodo_electro:{titulo:'Taller de Electromecánica',imgDia:'images/taller-electromecanica.jpg',imgNoche:'images/noche/taller-electromecanica.jpg',xy:[900,580],zona:'electro',f:null,b:null,l:'nodo_cancha',r:'nodo_k'},
- nodo_h:{titulo:'Edificio H · Biblioteca',imgDia:'images/biblioteca-h.jpg',imgNoche:'images/noche/biblioteca-h.jpg',xy:[725,345],zona:'H',f:null,b:'nodo_cancha',l:'nodo_i',r:'nodo_g'},
- nodo_i:{titulo:'Edificio I (Aulas A19–A22)',imgDia:'images/pasillo-i.jpg',imgNoche:'images/noche/pasillo-i.jpg',xy:[400,372],zona:'I',f:'nodo_o',b:null,l:'nodo_basket',r:'nodo_h'},
- nodo_o:{titulo:'Laboratorio de cómputo 3 (Edificio O)',imgDia:'images/lab-computo-3.jpg',imgNoche:'images/noche/lab-computo-3.jpg',xy:[490,275],zona:'O',f:null,b:'nodo_i',l:null,r:null},
- nodo_g:{titulo:'Estacionamiento G',imgDia:'images/estacionamiento-g.jpg',imgNoche:'images/noche/estacionamiento-g.jpg',xy:[980,365],zona:'G',f:null,b:null,l:'nodo_h',r:null},
- nodo_basket:{titulo:'Cancha de basquetbol',imgDia:'images/cancha-basquetbol.jpg',imgNoche:'images/noche/cancha-basquetbol.jpg',xy:[250,372],zona:'basket',f:null,b:null,l:null,r:'nodo_i'}
+ nodo_calle:{titulo:'Calle · Av. Lázaro Cárdenas',imgDia:'images/calle.jpg',xy:[658,1340],zona:null,f:'nodo_entrada',b:null,l:null,r:null},
+ nodo_entrada:{titulo:'Entrada principal',imgDia:'images/entrada.jpg',xy:[658,1262],zona:'acceso',f:'nodo_frente_a',b:'nodo_calle',l:'nodo_sanitarios_p',r:'nodo_estacionamiento'},
+ nodo_estacionamiento:{titulo:'Estacionamiento sur',imgDia:'images/estacionamiento.jpg',xy:[890,1270],zona:'estS',f:null,b:null,l:'nodo_entrada',r:null},
+ nodo_sanitarios_p:{titulo:'Sanitarios P',imgDia:'images/sanitarios-p.jpg',xy:[555,1262],zona:'P',f:null,b:null,l:null,r:'nodo_entrada'},
+ nodo_frente_a:{titulo:'Frente al Edificio A (Administrativo)',imgDia:'images/frente-a.jpg',xy:[660,1178],zona:'A',f:'nodo_cruce_c',b:'nodo_entrada',l:null,r:'nodo_pasillo_a'},
+ nodo_cruce_c:{titulo:'Cruce frente al Edificio C',imgDia:'images/cruce-c.jpg',xy:[660,1115],zona:'C',f:'nodo_pasillo_c',b:'nodo_frente_a',l:null,r:'nodo_plaza'},
+ nodo_pasillo_a:{titulo:'Pasillo Edificio A',imgDia:'images/pasillo-a.jpg',xy:[800,1135],zona:'A',f:'nodo_plaza',b:null,l:'nodo_frente_a',r:'nodo_sanitarios_enie'},
+ nodo_sanitarios_enie:{titulo:'Sanitarios Ñ',imgDia:'images/sanitarios-enie.jpg',xy:[1090,1135],zona:'Ñ',f:null,b:null,l:'nodo_pasillo_a',r:null},
+ nodo_plaza:{titulo:'Plaza cívica',imgDia:'images/plaza.jpg',xy:[978,1055],zona:'plaza',f:'nodo_edificio_e',b:'nodo_pasillo_a',l:'nodo_cruce_c',r:null},
+ nodo_edificio_e:{titulo:'Pasillo Edificio E',imgDia:'images/pasillo-e.jpg',xy:[1000,965],zona:'E',f:'nodo_l',b:'nodo_plaza',l:'nodo_pasillo_j',r:null},
+ nodo_l:{titulo:'Frente a Intendencia, COMA y CDEX (Edificio L)',imgDia:'images/coma-cdex.jpg',xy:[1100,835],zona:'L',f:'nodo_taller_auto',b:'nodo_edificio_e',l:null,r:null},
+ nodo_taller_auto:{titulo:'Taller de Mtto. Automotriz y Almacén',imgDia:'images/taller-auto.jpg',xy:[900,762],zona:'auto',f:'nodo_k',b:'nodo_l',l:null,r:null},
+ nodo_k:{titulo:'Edificio K (Aulas A23–A26)',imgDia:'images/edificio-k.jpg',xy:[1165,592],zona:'K',f:'nodo_n',b:'nodo_taller_auto',l:'nodo_electro',r:null},
+ nodo_n:{titulo:'Taller de Servicios Generales',imgDia:'images/taller-servicios.jpg',xy:[1330,585],zona:'N',f:null,b:'nodo_k',l:null,r:null},
+ nodo_pasillo_c:{titulo:'Pasillo Edificio C',imgDia:'images/pasillo-c.jpg',xy:[620,1063],zona:'C',f:'nodo_pasillo_d',b:'nodo_cruce_c',l:null,r:null},
+ nodo_pasillo_d:{titulo:'Pasillo Edificio D',imgDia:'images/pasillo-d.jpg',xy:[620,994],zona:'D',f:'nodo_pasillo_j',b:'nodo_pasillo_c',l:null,r:null},
+ nodo_pasillo_j:{titulo:'Pasillo Edificio J (Cómputo e inglés)',imgDia:'images/pasillo-j.jpg',xy:[690,895],zona:'J',f:'nodo_pasillo_b',b:'nodo_pasillo_d',l:'nodo_cafeteria',r:'nodo_edificio_e'},
+ nodo_cafeteria:{titulo:'Cafetería',imgDia:'images/cafeteria.jpg',xy:[550,760],zona:'cafe',f:null,b:null,l:'nodo_futbol',r:'nodo_pasillo_j'},
+ nodo_futbol:{titulo:'Cancha de fútbol',imgDia:'images/cancha-futbol.jpg',xy:[330,880],zona:'futbol',f:null,b:null,l:null,r:'nodo_cafeteria'},
+ nodo_pasillo_b:{titulo:'Pasillo Edificio B',imgDia:'images/pasillo-b.jpg',xy:[700,655],zona:'B',f:'nodo_cancha',b:'nodo_pasillo_j',l:null,r:null},
+ nodo_cancha:{titulo:'Cancha de voleibol',imgDia:'images/cancha-voleibol.jpg',xy:[600,545],zona:'cancha',f:'nodo_h',b:'nodo_pasillo_b',l:'nodo_mecatronica',r:'nodo_electro'},
+ nodo_mecatronica:{titulo:'Taller de Mecatrónica',imgDia:'images/taller-mecatronica.jpg',xy:[390,590],zona:'M',f:null,b:null,l:null,r:'nodo_cancha'},
+ nodo_electro:{titulo:'Taller de Electromecánica',imgDia:'images/taller-electromecanica.jpg',xy:[900,580],zona:'electro',f:null,b:null,l:'nodo_cancha',r:'nodo_k'},
+ nodo_h:{titulo:'Edificio H · Biblioteca',imgDia:'images/biblioteca-h.jpg',xy:[725,345],zona:'H',f:null,b:'nodo_cancha',l:'nodo_i',r:'nodo_g'},
+ nodo_i:{titulo:'Edificio I (Aulas A19–A22)',imgDia:'images/pasillo-i.jpg',xy:[400,372],zona:'I',f:'nodo_o',b:null,l:'nodo_basket',r:'nodo_h'},
+ nodo_o:{titulo:'Laboratorio de cómputo 3 (Edificio O)',imgDia:'images/lab-computo-3.jpg',xy:[490,275],zona:'O',f:null,b:'nodo_i',l:null,r:null},
+ nodo_g:{titulo:'Estacionamiento G',imgDia:'images/estacionamiento-g.jpg',xy:[980,365],zona:'G',f:null,b:null,l:'nodo_h',r:null},
+ nodo_basket:{titulo:'Cancha de basquetbol',imgDia:'images/cancha-basquetbol.jpg',xy:[250,372],zona:'basket',f:null,b:null,l:null,r:'nodo_i'}
 };
 
 // =====================================================================
 //  RED AMPLIADA · GUÍA PASO A PASO (entrada → pasillos → escaleras → aula)
-//  Cada nodo nuevo aparece solo en "Ir a…", en "¿Cómo llegar?" y en MIS FOTOS (que lee esta lista), con su propia foto de día y de noche.
-//  Fotos: images/NOMBRE.jpg y images/noche/NOMBRE.jpg · ni:1 = lugar interior (no cambia el "Ubicación" del recorrido 3D).
+//  Cada nodo nuevo aparece solo en "Ir a…", en "¿Cómo llegar?" y en MIS FOTOS (que lee esta lista), con su propia foto.
+//  Fotos: images/NOMBRE.jpg · ni:1 = lugar interior (no cambia el "Ubicación" del recorrido 3D).
 //  Enlaces f / b / l / r: a qué nodo lleva cada flecha (null = sin camino). Ajusta los enlaces de las escaleras de D, E y K a tu recorrido real.
 // =====================================================================
 const nd=s=>/^A\d+$/.test(s)?'nodo_aula_'+s.toLowerCase():s;
-const NN=(id,titulo,foto,xy,f,b,l,r,ni)=>{NODOS[id]={titulo,imgDia:`images/${foto}.jpg`,imgNoche:`images/noche/${foto}.jpg`,xy,zona:null,f:f&&nd(f),b:b&&nd(b),l:l&&nd(l),r:r&&nd(r)};if(ni)NODOS[id].ni=1};
+const NN=(id,titulo,foto,xy,f,b,l,r,ni)=>{NODOS[id]={titulo,imgDia:`images/${foto}.jpg`,xy,zona:null,f:f&&nd(f),b:b&&nd(b),l:l&&nd(l),r:r&&nd(r)};if(ni)NODOS[id].ni=1};
 // -- Entrada y recorrido hacia los edificios (se intercalan nodos en la ruta existente) --
 NN('nodo_pasillo_entrada','Pasillo de la entrada','pasillo-entrada',[659,1222],'nodo_frente_a','nodo_entrada',null,null);
 NN('nodo_escalera_c','Escaleras del Edificio C (suben a Planta Alta)','escaleras-c',[606,1050],'nodo_pasillo_d','nodo_pasillo_c',null,'nodo_c_pa');
@@ -865,21 +866,21 @@ mk('circle',{cx:658,cy:1196,r:3.2,fill:'#fff'},gm);
 mk('text',{x:630,y:1202,'text-anchor':'end','font-size':13,'font-weight':700,fill:'#fff','letter-spacing':1,'paint-order':'stroke',stroke:'#0f1726','stroke-width':4},gm).textContent='VISTA DE CALLE';
 
 // ---- Motor del visor ----
-const svEl=$('#sv'),LY=[$('#p0'),$('#p1')],cache={},DIM='brightness(.42) saturate(.7) contrast(1.05) hue-rotate(-10deg)';
-let svCur=null,svAct=1,svMode='dia',you=null;
+const svEl=$('#sv'),LY=[$('#p0'),$('#p1')],cache={};
+const svMode='dia';   // solo hay fotos de día
+let svCur=null,svAct=1,you=null;
 Object.entries(NODOS).forEach(([id,n])=>{const o=document.createElement('option');o.value=id;o.textContent=n.titulo;$('#svsel').appendChild(o)});
-const placeholder=(n,m)=>{const nt=m==='noche';return 'data:image/svg+xml,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${nt?'#1b2a44':'#7f93ab'}"/><stop offset=".55" stop-color="${nt?'#33425e':'#b9c4d1'}"/><stop offset=".55" stop-color="${nt?'#222c3b':'#8a95a3'}"/><stop offset="1" stop-color="${nt?'#10161f':'#5c6674'}"/></linearGradient></defs><rect width="1600" height="900" fill="url(#g)"/><path d="M0 495H1600M800 495L330 900M800 495L1270 900" stroke="#fff" stroke-opacity=".3" stroke-width="3"/><text x="800" y="360" text-anchor="middle" font-family="sans-serif" font-size="54" font-weight="700" fill="#fff">${n.titulo}</text><text x="800" y="420" text-anchor="middle" font-family="monospace" font-size="28" fill="#fff" fill-opacity=".85">FOTO PENDIENTE (${nt?'NOCHE':'DÍA'}) · ${nt?n.imgNoche:n.imgDia}</text></svg>`)};
+const placeholder=(n,m)=>{return 'data:image/svg+xml,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7f93ab"/><stop offset=".55" stop-color="#b9c4d1"/><stop offset=".55" stop-color="#8a95a3"/><stop offset="1" stop-color="#5c6674"/></linearGradient></defs><rect width="1600" height="900" fill="url(#g)"/><path d="M0 495H1600M800 495L330 900M800 495L1270 900" stroke="#fff" stroke-opacity=".3" stroke-width="3"/><text x="800" y="360" text-anchor="middle" font-family="sans-serif" font-size="54" font-weight="700" fill="#fff">${n.titulo}</text><text x="800" y="420" text-anchor="middle" font-family="monospace" font-size="28" fill="#fff" fill-opacity=".85">FOTO PENDIENTE · ${n.imgDia} (o .png)</text></svg>`)};
 const tryLoad=src=>new Promise(ok=>{if(!src)return ok(false);const i=new Image();i.onload=()=>ok({w:i.naturalWidth||1600,h:i.naturalHeight||900});i.onerror=()=>ok(false);i.src=src});
 const dimsOf=src=>new Promise(ok=>{const i=new Image();i.onload=()=>ok({w:i.naturalWidth||1600,h:i.naturalHeight||900});i.onerror=()=>ok(null);i.src=src});
-// Devuelve {url, dim}: foto del modo actual; en noche, si falta imgNoche usa imgDia oscurecida
+// Devuelve {url}: la foto del lugar (si falta, una imagen provisional con el nombre del archivo esperado)
 const MYU={},MYB={};   // fotos propias cargadas desde el teléfono: dirección temporal y archivo, por nodo y modo
 async function loadImg(id,m){
  const k=id+m;if(cache[k])return cache[k];const n=NODOS[id];
  const mia=async(u,dim)=>{const d=await dimsOf(u)||{w:1600,h:900};return cache[k]={url:`url("${u}")`,dim,w:d.w,h:d.h}};
  if(MYU[k])return mia(MYU[k],false);
- if(m==='noche'&&MYU[id+'dia'])return mia(MYU[id+'dia'],true);   // sin foto de noche propia: la de día oscurecida
- if(m==='noche'){const r=await tryLoad(n.imgNoche);if(r)return cache[k]={url:`url("${n.imgNoche}")`,dim:false,w:r.w,h:r.h}}
- const r=await tryLoad(n.imgDia);if(r)return cache[k]={url:`url("${n.imgDia}")`,dim:m==='noche',w:r.w,h:r.h};
+ const base=n.imgDia.replace(/^images\//,'').replace(/\.jpg$/,'');   // busca en la carpeta images y, si no está, junto a este archivo; acepta .jpg, .png, .jpeg o .webp
+ for(const dir of ['images/','']){for(const ext of ['.jpg','.png','.jpeg','.webp']){const u=dir+base+ext,r=await tryLoad(u);if(r)return cache[k]={url:`url("${u}")`,dim:false,w:r.w,h:r.h}}}
  return cache[k]={url:`url("${placeholder(n,m)}")`,dim:false,w:1600,h:900};
 }
 // ---- VISTA DE LA FOTO: se puede mover (giro), acercar y restablecer. fx, fy = punto de la foto que queda al centro (0 a 1); z = zoom ----
@@ -899,7 +900,7 @@ async function svGo(id,dir){
  const f=await loadImg(id,svMode),nx=LY[1-svAct],ol=LY[svAct];
  const M={f:['scale(.92)','scale(1.12)'],b:['scale(1.1)','scale(.92)'],l:['translateX(-6%) scale(1.06)','translateX(6%) scale(1.06)'],r:['translateX(6%) scale(1.06)','translateX(-6%) scale(1.06)']}[dir]||['none','none'];
  nx._f=f;if(id!==svCur){V.z=1;V.fx=.5;V.fy=.5}colocar(nx);
- nx.style.transition='none';nx.style.backgroundImage=f.url;nx.style.filter=f.dim?DIM:'';nx.style.transform=M[0];void nx.offsetWidth;
+ nx.style.transition='none';nx.style.backgroundImage=f.url;nx.style.transform=M[0];void nx.offsetWidth;
  nx.style.transition='';nx.style.transform='';nx.classList.add('on');
  ol.classList.remove('on');ol.style.transform=M[1];
  svAct=1-svAct;svCur=id;
@@ -907,22 +908,16 @@ async function svGo(id,dir){
  ['f','b','l','r'].forEach(k=>{$('#n'+k).classList.toggle('off',!n[k]);if(n[k])loadImg(n[k],svMode)});
  youAt(n.xy);svRoute();
 }
-function setMode(m){
- svMode=m;const nt=m==='noche';
- svEl.classList.toggle('noche',nt);$('#isun').hidden=nt;$('#imoon').hidden=!nt;$('#smt').textContent=nt?'Noche':'Día';
- if(svCur)svGo(svCur,null);   // misma ubicación, foto del otro modo
-}
 function openSV(id){svEl.classList.add('open');svEl.setAttribute('aria-hidden','false');svGo(id||svCur||SV_INICIO,null)}
 function closeSV(){svEl.classList.remove('open');svEl.setAttribute('aria-hidden','true')}
 const step=k=>{const n=NODOS[svCur];if(n&&n[k])svGo(n[k],k)};
 ['f','b','l','r'].forEach(k=>$('#n'+k).onclick=()=>step(k));
 $('#svx').onclick=closeSV;$('#svb').onclick=()=>openSV();
-$('#sm').onclick=()=>setMode(svMode==='dia'?'noche':'dia');
 $('#svsel').onchange=e=>svGo(e.target.value,null);
 addEventListener('keydown',e=>{
  if(!svEl.classList.contains('open')||e.target.tagName==='SELECT')return;
  const k={ArrowUp:'f',ArrowDown:'b',ArrowLeft:'l',ArrowRight:'r'}[e.key];
- if(k){e.preventDefault();step(k)}else if(e.key==='Escape')closeSV();else if(e.key==='n'||e.key==='N')$('#sm').click();
+ if(k){e.preventDefault();step(k)}else if(e.key==='Escape')closeSV();
 });
 
 // ---- Botón "Ver vista del aula": aparece en la tarjeta al tocar una zona ----
@@ -1339,8 +1334,8 @@ $('#svh').onclick=()=>{setDest(cur);$('#t3b').click()};   // botón de la tarjet
 //  1) Abre la Vista de calle y ve al lugar que quieras (menú "Ir a…" o con las flechas).
 //  2) Toca "Mis fotos" → "Elegir foto de la galería" (o "Tomar foto ahora").
 //  3) La foto se reduce (hasta 2048 px; las panorámicas hasta 5000 px), reemplaza a la provisional y se guarda en este navegador (si el teléfono lo permite).
-//  El modo Día/Noche decide si la foto es de día o de noche. "Descargar mis fotos (.zip)" crea los archivos con los
-//  nombres exactos (images/..., images/noche/...) para subirlos después a la página web.
+//  "Descargar mis fotos (.zip)" crea los archivos con los nombres exactos (images/entrada.jpg, etc.)
+//  para ponerlos después en la carpeta images junto a este archivo.
 // =====================================================================
 // Crea un .zip sin compresión a partir de [[ruta, Uint8Array], ...] (las fotos JPG ya vienen comprimidas)
 function crearZip(items){
@@ -1362,10 +1357,10 @@ function crearZip(items){
 (()=>{
  const pm=$('#pm'),pf=$('#pf'),pfc=$('#pfc'),st=$('#pst');let db=null,persist=false;
  const ids=()=>Object.keys(NODOS),total=ids().length,key=()=>svCur+svMode;
- const have=()=>ids().filter(id=>MYB[id+'dia']||MYB[id+'noche']).length;
+ const have=()=>ids().filter(id=>MYB[id+'dia']).length;
  function refresh(){
   const n=NODOS[svCur];if(!n)return;
-  $('#pmt').textContent=n.titulo+' · foto de '+(svMode==='noche'?'noche':'día');
+  $('#pmt').textContent=n.titulo+' · '+n.imgDia.replace('images/','');
   $('#pmq').hidden=!MYB[key()];
   st.textContent=have()+' de '+total+' lugares con foto propia · '+(persist?'se guardan en este teléfono.':'no se pueden guardar al cerrar esta página: descarga el .zip para no perderlas.');
  }
@@ -1373,7 +1368,7 @@ function crearZip(items){
  $('#pg').onclick=()=>pf.click();$('#pc').onclick=()=>pfc.click();
  function poner(id,m,blob){
   if(MYU[id+m])URL.revokeObjectURL(MYU[id+m]);
-  MYB[id+m]=blob;MYU[id+m]=URL.createObjectURL(blob);delete cache[id+'dia'];delete cache[id+'noche'];
+  MYB[id+m]=blob;MYU[id+m]=URL.createObjectURL(blob);delete cache[id+'dia'];
  }
  function guardar(id,m,blob){if(!db)return;try{const os=db.transaction('f','readwrite').objectStore('f');blob?os.put(blob,id+m):os.delete(id+m)}catch(e){}}
  const reducir=file=>new Promise((ok,no)=>{const u=URL.createObjectURL(file),im=new Image();
@@ -1388,12 +1383,12 @@ function crearZip(items){
   catch(x){st.textContent='No se pudo leer esa imagen. Prueba con otra foto (JPG o PNG).'}
  }
  pf.onchange=elegida;pfc.onchange=elegida;
- $('#pmq').onclick=()=>{const id=svCur,m=svMode,k=id+m;if(MYU[k])URL.revokeObjectURL(MYU[k]);delete MYU[k];delete MYB[k];guardar(id,m,null);delete cache[id+'dia'];delete cache[id+'noche'];svGo(id,null);refresh()};
+ $('#pmq').onclick=()=>{const id=svCur,m=svMode,k=id+m;if(MYU[k])URL.revokeObjectURL(MYU[k]);delete MYU[k];delete MYB[k];guardar(id,m,null);delete cache[id+'dia'];svGo(id,null);refresh()};
  $('#pmn').onclick=()=>{const L=ids(),i=L.indexOf(svCur),sig=L.slice(i+1).concat(L.slice(0,i)).find(id=>!MYB[id+svMode]);
-  if(sig){svGo(sig,null);setTimeout(refresh,50)}else st.textContent='Ya hay foto en todos los lugares para este modo.'};
+  if(sig){svGo(sig,null);setTimeout(refresh,50)}else st.textContent='Ya hay foto en todos los lugares.'};
  $('#pz').onclick=async()=>{
   const items=[];
-  for(const k in MYB){const m=k.endsWith('noche')?'noche':'dia',n=NODOS[k.slice(0,k.length-m.length)];if(n)items.push([m==='noche'?n.imgNoche:n.imgDia,new Uint8Array(await MYB[k].arrayBuffer())])}
+  for(const k in MYB){if(!k.endsWith('dia'))continue;const n=NODOS[k.slice(0,-3)];if(n)items.push([n.imgDia,new Uint8Array(await MYB[k].arrayBuffer())])}
   if(!items.length){st.textContent='Todavía no has cargado ninguna foto.';return}
   const a=document.createElement('a');a.href=URL.createObjectURL(crearZip(items));a.download='mis-fotos-cbtis123.zip';document.body.appendChild(a);a.click();a.remove();
   st.textContent='Listo: se descargó mis-fotos-cbtis123.zip ('+items.length+' fotos).';
@@ -1404,7 +1399,7 @@ function crearZip(items){
   rq.onerror=()=>{persist=false};
   rq.onsuccess=()=>{db=rq.result;persist=true;
    db.transaction('f').objectStore('f').openCursor().onsuccess=e=>{const c=e.target.result;
-    if(c){MYB[c.key]=c.value;MYU[c.key]=URL.createObjectURL(c.value);c.continue()}else{if(svCur){delete cache[svCur+'dia'];delete cache[svCur+'noche'];svGo(svCur,null)}}}};
+    if(c){MYB[c.key]=c.value;MYU[c.key]=URL.createObjectURL(c.value);c.continue()}else{if(svCur){delete cache[svCur+'dia'];svGo(svCur,null)}}}};
  }catch(e){persist=false}
  // cerrar el menú al cerrar el visor
  const sx=$('#svx'),prev=sx.onclick;sx.onclick=()=>{pm.hidden=true;prev&&prev()};

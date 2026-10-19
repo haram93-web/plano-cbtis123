@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#eef0f2">
+<meta name="theme-color" content="#0f1726">
 <title>Plano interactivo · CBTis 123</title>
 <meta name="description" content="Plano interactivo del CBTis 123: mapa 2D con edificios, talleres y aulas, rutas con tiempo estimado, recorrido en vista de calle y recorrido 3D.">
 <meta property="og:title" content="Plano interactivo · CBTis 123">
@@ -47,7 +47,7 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0;background:none
 .lgp li{display:flex;align-items:center;gap:9px;font-size:.78rem;line-height:1.25;padding:3px 0}
 .lgp small{display:block;margin-top:10px;font-size:.7rem;color:var(--mu)}
 .lgp .sw{width:22px;height:14px;border-radius:2px;border:1px solid #56657a;flex:none}
-.lgp .sw.ln{height:0;border:0;border-top:3px solid #1f4e8c;border-radius:0}
+.lgp .sw.ln{height:0;border:0;border-top:3px solid #5aa0ff;border-radius:0}
 .lgp .ci,.lgp .pl,.lgp .dt{flex:none;width:20px;height:20px;display:grid;place-items:center;font:800 .68rem system-ui,sans-serif;font-style:normal;color:#fff}
 .lgp .ci{border-radius:50%;background:#1c2633;border:2px solid #fff;box-shadow:0 0 0 1px #cfd5dc}
 .lgp .pl{border-radius:4px;background:#5b8a6a;font-size:1rem}
@@ -55,6 +55,16 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0;background:none
 .lgp .ic{width:24px;height:18px;flex:none}
 #esc2{align-self:flex-end;padding:6px 10px 5px;border-radius:8px;font:700 .72rem system-ui,sans-serif;color:var(--ink)}
 #escb{height:7px;border:2px solid var(--ink);border-top:0;margin-bottom:3px}
+/* cómo llegar */
+.trow{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.trow .tt{margin-top:0}
+.clc h5{margin:14px 0 4px;font-size:.86rem;color:var(--ac)}
+.clc p{font-size:.82rem;line-height:1.45}
+.clb{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.clb .sec{padding:9px 8px;font-size:.76rem}
+.cll{list-style:none;margin:6px 0 0;padding:0;font-size:.8rem;line-height:1.4}
+.cll li{padding:6px 8px;border-radius:8px;background:rgba(31,58,95,.07);margin-bottom:5px}
+.cll li.vac{background:none;padding:0;color:var(--mu);font-size:.76rem}
+.cll small{display:block;color:var(--mu);font-size:.72rem}
+.clc>small{display:block;margin-top:12px;color:var(--mu);font-size:.72rem}
 /* ruta en el plano + tiempo */
 .tt{display:flex;align-items:center;gap:8px;margin-top:8px;max-width:100%;padding:9px 14px;border-radius:10px;font:600 .8rem/1.25 system-ui,sans-serif;color:var(--ac);text-align:left;transition:background .2s}
 .tt:hover{background:#fff}
@@ -252,21 +262,34 @@ html,body{background:#eef0f2}
 .rt{font:700 8.5px system-ui,sans-serif;fill:#6b7690;text-anchor:middle;dominant-baseline:central;pointer-events:none}
 .rl{stroke:#8d98a8;stroke-width:.9;pointer-events:none}
 .z.on .rm{fill:#fff}.z.on .rt{fill:#cfe0ff}.z.on .rl{stroke:#9db8e6}
+
+/* ===== v35 · plano en tono oscuro y mayor contraste ===== */
+html,body{background:#0f1726}
+.z rect{stroke:rgba(214,226,246,.55)}
+.z:hover rect{fill-opacity:1;filter:brightness(1.22)}
+.z.on rect{fill:#3b82f6!important;stroke:#fff;stroke-width:2.2;filter:none}
+.z rect.ex{fill:#000!important;opacity:.5;filter:none}
+.lb{fill:#eef3fb}.sb{fill:#b3c0d6}
+.rm{fill:#eef3fb}.rt{fill:#a9b8d2}.rl{stroke:rgba(255,255,255,.4)}
+.z .pk{stroke:#7384a1}
+.z.on .lb{fill:#fff}.z.on .sb{fill:#dbe6fb}
+.rth{stroke:#0b1220;opacity:.9}
+.rtl{stroke:#ffd23f}
 </style>
 </head>
 <body>
 <svg id="map" xmlns="http://www.w3.org/2000/svg">
-<defs><linearGradient id="rfg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".62"/><stop offset="1" stop-color="#fff" stop-opacity=".12"/></linearGradient><pattern id="gr" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M100 0H0V100" fill="none" stroke="#dfe3e8" stroke-width="1"/></pattern></defs>
+<defs><linearGradient id="rfg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".32"/><stop offset="1" stop-color="#fff" stop-opacity=".03"/></linearGradient><pattern id="gr" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M100 0H0V100" fill="none" stroke="#18233a" stroke-width="1"/></pattern></defs>
 <g id="vp">
- <rect x="-3000" y="-3000" width="7000" height="7000" fill="#eef0f2"/>
+ <rect x="-3000" y="-3000" width="7000" height="7000" fill="#0f1726"/>
  <rect x="-3000" y="-3000" width="7000" height="7000" fill="url(#gr)"/>
- <rect x="-3000" y="1315" width="7000" height="56" fill="#d3d7dc"/>
- <path d="M-3000 1343H4000" stroke="#fff" stroke-width="3" stroke-dasharray="24 16"/>
- <text x="1180" y="1362" text-anchor="middle" font-size="14" font-weight="600" fill="#6b7685" font-family="system-ui" letter-spacing="2.5">AV. LÁZARO CÁRDENAS</text>
- <path d="M47 1290V148L1090 205L1060 488L1408 488L1408 611L1222 611L1195 1300" fill="none" stroke="#d0d5dc" stroke-width="64" stroke-linejoin="round"/>
- <polygon points="45,148 1090,205 1060,488 1408,488 1408,611 1222,611 1195,1300 420,1300 420,590 100,590 100,375 45,375" fill="#dcdfe6" stroke="#1d4e89" stroke-width="3" style="vector-effect:non-scaling-stroke"/>
- <path d="M47 378H100V590H420V1275H50Z" fill="#cddfa6" stroke="#9aa3ad" stroke-width="1.5" style="vector-effect:non-scaling-stroke"/>
- <g id="lw" fill="#cbd9c6"></g>
+ <rect x="-3000" y="1315" width="7000" height="56" fill="#222d43"/>
+ <path d="M-3000 1343H4000" stroke="#7f8da8" stroke-width="3" stroke-dasharray="24 16"/>
+ <text x="1180" y="1362" text-anchor="middle" font-size="14" font-weight="600" fill="#9db0cf" font-family="system-ui" letter-spacing="2.5">AV. LÁZARO CÁRDENAS</text>
+ <path d="M47 1290V148L1090 205L1060 488L1408 488L1408 611L1222 611L1195 1300" fill="none" stroke="#1a2438" stroke-width="64" stroke-linejoin="round"/>
+ <polygon points="45,148 1090,205 1060,488 1408,488 1408,611 1222,611 1195,1300 420,1300 420,590 100,590 100,375 45,375" fill="#27334c" stroke="#5aa0ff" stroke-width="3" style="vector-effect:non-scaling-stroke"/>
+ <path d="M47 378H100V590H420V1275H50Z" fill="#2b4a37" stroke="#4d7058" stroke-width="1.5" style="vector-effect:non-scaling-stroke"/>
+ <g id="lw" fill="#34583f"></g>
  <g id="zs"></g>
  <g id="pr"></g>
 </g>
@@ -278,7 +301,10 @@ html,body{background:#eef0f2}
   <input id="q" type="search" placeholder="Buscar aula, oficina o área…" autocomplete="off">
   <button class="ib" id="qx" aria-label="Limpiar" style="display:none"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
  </div>
- <button id="tt" class="tt glass" type="button" aria-expanded="false" aria-controls="ttc"><svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M8.5 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.5"/></svg><span>Trazar ruta y calcular tiempo</span></button>
+ <div class="trow">
+   <button id="tt" class="tt glass" type="button" aria-expanded="false" aria-controls="ttc"><svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M8.5 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.5"/></svg><span>Trazar ruta y tiempo</span></button>
+  <button id="cl" class="tt glass" type="button" aria-expanded="false" aria-controls="clc"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="14" rx="3"/><path d="M4 11h16M8 21v-3M16 21v-3"/><circle cx="8.5" cy="14" r=".9"/><circle cx="15.5" cy="14" r=".9"/></svg><span>Cómo llegar</span></button>
+ </div>
  <div id="ttc" class="ttc glass" hidden>
   <div class="tth"><h4>Ruta en el plano</h4><button class="ib" id="ttx" type="button" aria-label="Cerrar"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="ttg"><label>Desde<select id="tfrom"></select></label><label>Hasta<select id="tto"></select></label></div>
@@ -289,6 +315,16 @@ html,body{background:#eef0f2}
    <button class="pri" id="ttv" type="button">Ver el recorrido en Street View</button>
    <button class="sec" id="ttl" type="button">Limpiar ruta</button>
   </div>
+ </div>
+ <div id="clc" class="ttc glass clc" hidden>
+  <div class="tth"><h4>Cómo llegar y transporte urbano</h4><button class="ib" id="clx" type="button" aria-label="Cerrar"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <h5>Ubicación y referencias</h5>
+  <div class="clb"><button class="sec" id="clm" type="button">Ver referencias en el mapa</button><button class="sec" id="clr" type="button">Ruta del OXXO a la entrada</button></div>
+  <h5>BinniBus</h5>
+  <ul id="clbb" class="cll"></ul>
+  <h5>Autobuses urbanos</h5>
+  <ul id="clbu" class="cll"></ul>
+  <small>Las rutas, los horarios y las tarifas pueden cambiar: confirma la información vigente antes de viajar.</small>
  </div>
  <div id="res" class="glass"></div>
 </div>
@@ -312,18 +348,20 @@ html,body{background:#eef0f2}
  <div id="lgp" class="lgp glass" hidden>
   <h4>Edificios y áreas</h4>
   <ul>
-   <li><i class="sw" style="background:#c9d3df"></i>Aulas</li>
-   <li><i class="sw" style="background:#aebccf"></i>Administración</li>
-   <li><i class="sw" style="background:#c3cad8"></i>Laboratorios y aulas con laboratorio</li>
-   <li><i class="sw" style="background:#d8d5cd"></i>Talleres</li>
-   <li><i class="sw" style="background:#d5dcd9"></i>Biblioteca, emprendimiento y COMA / CDEX</li>
-   <li><i class="sw" style="background:#e9ebee"></i>Servicios (cafetería, sanitarios) y estacionamientos</li>
-   <li><i class="sw" style="background:#ffe3d3"></i>Intendencia</li>
-   <li><i class="sw" style="background:#a3acb8"></i>Canchas (voleibol y basquetbol)</li>
-   <li><i class="sw" style="background:#e08a48"></i>Plaza cívica</li>
-   <li><i class="sw" style="background:#a9bcd2"></i>Acceso principal</li>
-   <li><i class="sw" style="background:#8fb0d4"></i>Cancha de fútbol (fuera del plantel)</li>
-   <li><i class="sw" style="background:#cbd9c6"></i>Áreas verdes</li>
+   <li><i class="sw" style="background:#5b7ba6"></i>Aulas</li>
+   <li><i class="sw" style="background:#38598a"></i>Administración</li>
+   <li><i class="sw" style="background:#6b72a8"></i>Laboratorios y aulas con laboratorio</li>
+   <li><i class="sw" style="background:#7a6544"></i>Talleres</li>
+   <li><i class="sw" style="background:#4f8a82"></i>Biblioteca, emprendimiento y COMA / CDEX</li>
+   <li><i class="sw" style="background:#36425a"></i>Servicios (cafetería, sanitarios) y estacionamientos</li>
+   <li><i class="sw" style="background:#8f563a"></i>Intendencia</li>
+   <li><i class="sw" style="background:#3c7a64"></i>Canchas (voleibol y basquetbol)</li>
+   <li><i class="sw" style="background:#b85d20"></i>Plaza cívica</li>
+   <li><i class="sw" style="background:#4f86c6"></i>Acceso principal</li>
+   <li><i class="sw" style="background:#2f6a99"></i>Cancha de fútbol (fuera del plantel)</li>
+   <li><i class="sw" style="background:#34583f"></i>Áreas verdes</li>
+   <li><i class="sw" style="background:#a67c12"></i>OXXO (enfrente del plantel)</li>
+   <li><i class="sw" style="background:#4f86b8"></i>Tienda Keiry (uniformes escolares)</li>
    <li><i class="sw ln"></i>Muro perimetral del plantel</li>
   </ul>
   <h4>Símbolos</h4>
@@ -455,6 +493,22 @@ html,body{background:#eef0f2}
 // ---------------------------------------------------------------------
 const UNIDADES_POR_METRO=null,NORTE_EN_PLANO=0;
 
+//  RUTAS DE TRANSPORTE QUE PASAN POR LA ZONA (panel "Cómo llegar")
+//  Agrega aquí las rutas principales; si una lista está vacía, el panel muestra una indicación general.
+//  Formato de cada ruta:  {ruta:'CLAVE O NOMBRE', trayecto:'Origen ⇄ Destino', parada:'Dónde bajar / referencia'}
+const TRANSPORTE={
+ binnibus:[
+  {ruta:'RA-04',trayecto:'Monumento a la Madre / Tecnológico ⇄ Santa Cruz Amilpas'},
+  {ruta:'RA-14',trayecto:'Montoya ⇄ Fraccionamiento El Rosario'},
+  {ruta:'RA-15',trayecto:'Colonia Monte Albán ⇄ El Tule ⇄ Santo Domingo Tomaltepec'},
+  {ruta:'RC-14',trayecto:'Yuroo Viguera ⇄ San Sebastián Tutla'}
+ ],
+ urbanos:[
+  {ruta:'Ruta 24',trayecto:'Santa Cruz Amilpas ⇄ Santa Rosa'},
+  {ruta:'Ruta 50',trayecto:'Cuevita ⇄ Rosario'}
+ ]
+};
+
 // Datos editables. g = rectángulos [x, y, ancho, alto] en coordenadas del croquis · p = contenido por planta · k = palabras clave
 const FN={b:'Planta Baja',a:'Planta Alta'},NS='http://www.w3.org/2000/svg';
 const $=s=>document.querySelector(s),svg=$('#map'),vp=$('#vp'),sheet=$('#sheet'),res=$('#res'),inp=$('#q');
@@ -462,6 +516,9 @@ const W=1370,H=1230,clamp=k=>Math.max(.12,Math.min(6,k)),mobile=()=>innerWidth<=
 let X=0,Y=0,K=1,TX=0,TY=0,TK=1,run=0,last=0,cur=null,fl='b',onVista=null;
 const mk=(t,a,p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);p.appendChild(e);return e};
 const AU='#c9d3df',TA='#d8d5cd',SV='#d5dcd9',DP='#a3acb8',ES='#e9ebee';
+// Plano en tono oscuro: color con que se pinta cada zona en el mapa (las tarjetas y listas conservan el color original)
+const DKM={"#c9d3df": "#5b7ba6", "#aebccf": "#38598a", "#c3cad8": "#6b72a8", "#d8d5cd": "#7a6544", "#d5dcd9": "#4f8a82", "#e9ebee": "#36425a", "#ffe3d3": "#8f563a", "#a3acb8": "#3c7a64", "#e08a48": "#b85d20", "#a9bcd2": "#4f86c6", "#8fb0d4": "#2f6a99", "#cbd9c6": "#34583f", "#ffe08a": "#a67c12", "#cfe3f7": "#4f86b8", "#ffe0b3": "#96662a", "#ddd6c9": "#86704f"};
+const dk=c=>DKM[c.toLowerCase()]||('#'+[1,3,5].map(i=>Math.round(parseInt(c.substr(i,2),16)*.55).toString(16).padStart(2,'0')).join(''));
 // Leyendas dentro de los bloques: zona -> [[núm. de rectángulo, [líneas de texto], tamaño de letra, girar 90°]]
 const ETQ={auto:[[0,['Taller de Mtto.','Automotriz'],17],[1,['Almacén'],15]],L:[[0,['INTEN-','DENCIA'],9.5,0,1]],comacdex:[[0,['COMA'],12,0,1],[1,['CDEX'],12,0,1]],papeleria:[[0,['PAPELERÍA'],6.8,0,1]]};
 const DESC={
@@ -496,7 +553,9 @@ const DESC={
 "poli": "Caseta de vigilancia del personal de seguridad, a la izquierda al entrar por la entrada estudiantil.",
 "acceso": "Entrada estudiantil sobre Av. Lázaro Cárdenas. El ingreso es con credencial estudiantil, a través del arco detector de metales. A la izquierda, al entrar, se encuentra la caseta de vigilancia.",
 "estS": "Estacionamiento sur, frente al acceso principal, sobre Av. Lázaro Cárdenas.",
-"estN": "Estacionamiento norte, ubicado al norte del plantel, entre la biblioteca y el muro perimetral."
+"estN": "Estacionamiento norte, ubicado al norte del plantel, entre la biblioteca y el muro perimetral.",
+"oxxo": "Tienda de conveniencia ubicada enfrente del plantel, del otro lado de la Av. Lázaro Cárdenas. Sirve como referencia para ubicar el CBTis 123.",
+"keiry": "Tienda Keiry, donde se venden los uniformes escolares. Se encuentra en la zona exterior, sobre la Av. Lázaro Cárdenas, y sirve como referencia para llegar al plantel."
 };   // descripciones de las tarjetas (una por zona)
 const Z=[
  ['A','Edificio A · Administrativo','A · Administrativo','Administración','#aebccf',[[688,1157,398,48]],'Oficinas administrativas del plantel.',{b:'Servicios escolares, Gestión educativa, Vinculación y Sala audiovisual',a:'Dirección, Subdirección docentes y Administrativos'}],
@@ -522,6 +581,8 @@ const Z=[
  ['futbol','Cancha de fútbol (fuera del plantel)','Cancha de fútbol','Fuera del plantel','#8fb0d4',[[48,635,347,495]],'Cancha de tierra, en una zona aparte del CBTis y en un nivel más bajo que las aulas.'],
  ['basket','Cancha de basquetbol','Basquetbol','Deportes',DP,[[75,160,160,185]]],
  ['cancha','Cancha de voleibol','Voleibol','Deportes',DP,[[475,395,238,170]],'Cancha de voleibol, al norte del edificio B. Se llega por el pasillo que queda a la izquierda del edificio.',0,'voleibol voleyball volleyball cancha central'],
+ ['oxxo','OXXO','OXXO','Referencias externas','#ffe08a',[[700,1390,96,44]],'',0,'tienda conveniencia oxxo referencia enfrente avenida lazaro cardenas'],
+ ['keiry','Tienda Keiry · Uniformes','Keiry','Referencias externas','#cfe3f7',[[820,1390,96,44]],'',0,'tienda keiry uniformes escolares referencia avenida lazaro cardenas'],
  ['puestos','Puestos (3 casetas)','Puestos','Servicios','#ffe0b3',[[500,1301,26,12],[534,1301,26,12],[568,1301,26,12]],'Tres casetas o puestos antes del acceso, a la izquierda de la entrada principal.'],
  ['papeleria','Papelería','Papelería','Servicios','#ffe0b3',[[430,612,56,30]],'Papelería: útiles escolares, copias e impresiones. Está junto a la cafetería, del lado de Mecatrónica.',0,'papeleria copias fotocopias utiles escolares'],
  ['banos','Baños (junto a la biblioteca)','WC','Servicios',ES,[[880,288,34,28]],'Baños: sanitarios junto a la biblioteca, del lado derecho.',0,'banos sanitarios wc mujeres hombres'],
@@ -556,7 +617,7 @@ Z.forEach(z=>{
  const g=mk('g',{class:'z',id:'z-'+z.id},$('#zs'));
  const ext=!/Deportes|Estacionamiento|Espacio|Acceso|Fuera/.test(z.t),dz=z.p?9:5;   // volumen: sombra lateral (más alta en edificios de 2 plantas) y techo claro
  if(ext)z.g.forEach(([x,y,w,h])=>mk('rect',{class:'ex',x:x+dz*.7,y:y+dz,width:w,height:h,rx:2},g));
- z.g.forEach(([x,y,w,h])=>mk('rect',{x,y,width:w,height:h,rx:2,fill:z.c},g));
+ z.g.forEach(([x,y,w,h])=>mk('rect',{x,y,width:w,height:h,rx:2,fill:dk(z.c)},g));
  if(ext)z.g.forEach(([x,y,w,h])=>w>16&&h>16&&mk('rect',{class:'rf',x:x+4,y:y+4,width:w-8,height:h-8,rx:2},g));
  {const [fx,fy,fw,fh]=z.g[0];
   if(z.id==='futbol'){mk('path',{class:'mk',d:`M${fx+20} ${fy+20}H${fx+fw-20}V${fy+fh-20}H${fx+20}ZM${fx+20} ${fy+fh/2}H${fx+fw-20}`},g);mk('circle',{class:'mk',cx:fx+fw/2,cy:fy+fh/2,r:48},g)}
@@ -589,8 +650,8 @@ Z.forEach(z=>{
 // ---- Letras de los edificios según el croquis oficial (posiciones del croquis x 1.44; no interactivas) ----
 [['A',617,857],['B',492,426],['C',288,738],['D',285,657],['E',788,640],['F',688,438],['G',625,243],['H',505,176],['I',275,192],['J',458,492],['K',810,408],['L',819,476],['M',70,322],['N',925,408],['O',336,126],['P',347,853],['Ñ',795,860],['Q',570,595]].forEach(([t,x,y])=>{
  const g=mk('g',{'pointer-events':'none'},$('#pr'));
- mk('circle',{cx:x*1.44,cy:y*1.44,r:15,fill:'#1c2633',stroke:'#fff','stroke-width':2.5},g);
- mk('text',{x:x*1.44,y:y*1.44+1,'text-anchor':'middle','dominant-baseline':'central','font-size':17,'font-weight':700,fill:'#fff','font-family':'system-ui,sans-serif'},g).textContent=t});
+ mk('circle',{cx:x*1.44,cy:y*1.44,r:15,fill:'#f3f6fb',stroke:'#0b1220','stroke-width':2.5},g);
+ mk('text',{x:x*1.44,y:y*1.44+1,'text-anchor':'middle','dominant-baseline':'central','font-size':17,'font-weight':700,fill:'#0b1220','font-family':'system-ui,sans-serif'},g).textContent=t});
 
 // ---- Animación suave (suavizado exponencial independiente de los FPS) ----
 const apply=()=>{vp.setAttribute('transform',`translate(${X.toFixed(2)} ${Y.toFixed(2)}) scale(${K.toFixed(4)})`);onVista&&onVista()};
@@ -602,7 +663,9 @@ const go=(x,y,k)=>{TX=x;TY=y;TK=k;if(!run){last=performance.now();run=requestAni
 const sync=()=>{cancelAnimationFrame(run);run=0;TX=X;TY=Y;TK=K};
 const zoomT=(cx,cy,f)=>{const nk=clamp(TK*f),r=nk/TK;go(cx-(cx-TX)*r,cy-(cy-TY)*r,nk)};
 const zoomNow=(cx,cy,f)=>{const nk=clamp(K*f),r=nk/K;X=cx-(cx-X)*r;Y=cy-(cy-Y)*r;K=nk;apply()};
-const fit=()=>{const r=svg.getBoundingClientRect(),k=Math.min(r.width/W,r.height/H)*.94;return{k,x:(r.width-W*k)/2-45*k,y:(r.height-H*k)/2-140*k}};
+const fit=()=>{const r=svg.getBoundingClientRect(),k=Math.min(r.width/W,r.height/H)*.97;return{k,x:(r.width-W*k)/2-45*k,y:(r.height-H*k)/2-140*k}};   // plano completo (botón de centrar)
+// vista de inicio: mapa grande, enfocado entre la calle (Av. Lázaro Cárdenas) y el Acceso principal; se desliza o se aleja para ver el resto
+const inicio=()=>{const r=svg.getBoundingClientRect(),k=Math.min(r.height/780,r.width/600);return{k,x:r.width/2-658*k,y:r.height*.78-1290*k}};
 const reset=()=>{const f=fit();go(f.x,f.y,f.k)};
 
 // ---- Selección, bottom sheet y plantas ----
@@ -695,7 +758,7 @@ svg.addEventListener('pointercancel',e=>{pts.delete(e.pointerId);lastD=0;sync()}
 addEventListener('resize',()=>cur?select(cur,fl):reset());
 
 // ---- Inicio con zoom suave de entrada ----
-const f0=fit();X=TX=f0.x+W*f0.k*.1;Y=TY=f0.y+H*f0.k*.1;K=TK=f0.k*.8;apply();go(f0.x,f0.y,f0.k);
+const f0=inicio();X=TX=f0.x+W*f0.k*.1;Y=TY=f0.y+H*f0.k*.1;K=TK=f0.k*.8;apply();go(f0.x,f0.y,f0.k);
 
 // =====================================================================
 //  VISTA DE CALLE · RECORRIDO VIRTUAL COMPLETO (día / noche)
@@ -796,10 +859,10 @@ const AULAS={};
 // ---- Marcador en el plano (junto al acceso principal) que abre el visor ----
 const gm=mk('g',{class:'mk',style:'cursor:pointer'},$('#pr'));
 mk('circle',{cx:658,cy:1196,r:34,fill:'transparent'},gm);
-mk('circle',{cx:658,cy:1196,r:20,fill:'#1f3a5f',stroke:'#fff','stroke-width':3},gm);
+mk('circle',{cx:658,cy:1196,r:20,fill:'#2563eb',stroke:'#fff','stroke-width':3},gm);
 mk('path',{d:'M646 1196Q658 1186 670 1196Q658 1206 646 1196Z',fill:'none',stroke:'#fff','stroke-width':2.2},gm);
 mk('circle',{cx:658,cy:1196,r:3.2,fill:'#fff'},gm);
-mk('text',{x:630,y:1202,'text-anchor':'end','font-size':13,'font-weight':700,fill:'#1f3a5f','letter-spacing':1,'paint-order':'stroke',stroke:'#e4e7eb','stroke-width':4},gm).textContent='VISTA DE CALLE';
+mk('text',{x:630,y:1202,'text-anchor':'end','font-size':13,'font-weight':700,fill:'#fff','letter-spacing':1,'paint-order':'stroke',stroke:'#0f1726','stroke-width':4},gm).textContent='VISTA DE CALLE';
 
 // ---- Motor del visor ----
 const svEl=$('#sv'),LY=[$('#p0'),$('#p1')],cache={},DIM='brightness(.42) saturate(.7) contrast(1.05) hue-rotate(-10deg)';
@@ -960,7 +1023,7 @@ D(980,806,24,60,24.5,'#c9ccd0',22.5,{nc:1});[[980,806],[1002,806],[980,862],[100
 // ---- QUITAR_3D: piezas (rectángulos) de una zona que NO se construyen en el 3D (el plano 2D no cambia) ----
 // Formato: ['id de zona', número de rectángulo contando desde 0].  ['auto',1] quita el almacén pegado al taller automotriz.
 // Para volver a ponerlo, borra esa fila.
-const QUITAR_3D=[['auto',1]];
+const QUITAR_3D=[['auto',1],['oxxo',0],['keiry',0]];
 QUITAR_3D.forEach(([id,n])=>{const L=BX.filter(b=>b.z.id===id);if(L[n])BX.splice(BX.indexOf(L[n]),1)});
 // ---- PASOS por la planta baja de un edificio: ['id de zona', x donde empieza el paso, ancho, altura libre] ----
 // Ejemplo: ['C',596,52,14] abre un paso de 52 de ancho y 14 de alto en la planta baja del edificio C (arriba queda construido).
@@ -1354,6 +1417,17 @@ function crearZip(items){
   onVista=()=>{const pm=UNIDADES_POR_METRO*K,m=N.filter(n=>n*pm<=130).pop()||N[0];$('#escb').style.width=m*pm+'px';$('#esct').textContent=m+' m'};onVista()}
 })();
 
+// ---- CÓMO LLEGAR Y TRANSPORTE URBANO ----
+(()=>{const b=$('#cl'),c=$('#clc'),t=$('#tt'),tc=$('#ttc'),set=o=>{c.hidden=!o;b.setAttribute('aria-expanded',o);if(o){tc.hidden=true;t.setAttribute('aria-expanded',false)}};
+ const lista=(el,a,vacio)=>{el.innerHTML=a.length?a.map(r=>`<li><b>${r.ruta||''}</b>${r.trayecto?' · '+r.trayecto:''}${r.parada?`<small>Parada: ${r.parada}</small>`:''}</li>`).join(''):`<li class="vac">${vacio}</li>`};
+ lista($('#clbb'),TRANSPORTE.binnibus,'Consulta las rutas vigentes de BinniBus y elige una que circule por la Av. Lázaro Cárdenas; baja en la parada más cercana al plantel.');
+ lista($('#clbu'),TRANSPORTE.urbanos,'Toma una unidad que circule por la Av. Lázaro Cárdenas. El OXXO y la tienda Keiry sirven de referencia para bajar.');
+ const enfocar=(x0,y0,x1,y1)=>{const r=svg.getBoundingClientRect(),bw=r.width-40,bh=r.height-150,k=clamp(Math.min(bw/(x1-x0),bh/(y1-y0)));go(20+(bw-(x1-x0)*k)/2-x0*k,100+(bh-(y1-y0)*k)/2-y0*k,k)};
+ b.onclick=()=>set(c.hidden);$('#clx').onclick=()=>set(false);t.addEventListener('click',()=>{c.hidden=true;b.setAttribute('aria-expanded',false)});
+ $('#clm').onclick=()=>{set(false);enfocar(560,1250,980,1450)};      // acceso, calle y tiendas de referencia
+ $('#clr').onclick=()=>{set(false);trazarRuta('oxxo','acceso')}      // ruta del OXXO a la entrada del plantel
+})();
+
 // ---- TRAZAR RUTA EN EL PLANO 2D + TIEMPO ESTIMADO (de cualquier lugar a cualquier lugar) ----
 // El camino se calcula sobre el propio plano con una malla de 5 unidades: se rodea cualquier edificio o taller
 // (no se atraviesan), se respetan el muro perimetral y el muro de contención (solo se pasa por las escaleras y
@@ -1373,7 +1447,7 @@ function crearZip(items){
   [[557,20,902],[1123,22,892]].forEach(([x,w,ty])=>{mk('path',{d:`M${x} 880V862L${x+w} 880Z`,fill:'#d9d4ca',stroke:'#8d8576','stroke-width':.8},e);
    mk('text',{x:x+w/2,y:ty,'text-anchor':'middle','font-size':5.6,'font-weight':700,fill:'#5b6b80'},e).textContent='RAMPA'})}
  // ---------- malla de caminos ----------
- const CS=5,GX=0,GY=100,GW=285,GH=260,PERI=[[45,148],[1030,201.7],[1090,205],[1060,488],[1408,488],[1408,611],[1222,611],[1195,1300],[420,1300],[420,590],[100,590],[100,375],[47,375],[47,148]],
+ const CS=5,GX=0,GY=100,GW=285,GH=290,PERI=[[45,148],[1030,201.7],[1090,205],[1060,488],[1408,488],[1408,611],[1222,611],[1195,1300],[420,1300],[420,590],[100,590],[100,375],[47,375],[47,148]],
   HUECOS=[[528,580],[820,848],[1118,1148]],PASOSCD=[[596,648,1034,1093],[596,648,917,971]];
  let blk=null;
  const buildGrid=()=>{blk=new Uint8Array(GW*GH);
@@ -1384,6 +1458,7 @@ function crearZip(items){
    if(!v)for(let k=0;k<PERI.length;k++)if(dseg(x,y,PERI[k],PERI[(k+1)%PERI.length])<3.5){v=true;break}
    if(!v&&y>=876&&y<=884&&x>=420&&x<=1215&&!HUECOS.some(([p,q])=>x>p&&x<q))v=true;
    blk[j*GW+i]=v?1:0}
+  cel(0,1372,1420,1560,0);       // acera de enfrente (las tiendas la bloquean más abajo)
   Z.forEach(z=>{if(/Deportes|Espacio|Estacionamiento|Acceso|Fuera/.test(z.t))return;z.g.forEach(([x,y,w,h])=>cel(x-3,y-3,x+w+3,y+h+3,1))});   // edificios y talleres: no se atraviesan
   PASOSCD.forEach(([x0,x1,y0,y1])=>cel(x0,y0,x1,y1,0));
   cel(612,1288,704,1318,0);      // puerta del Acceso principal
@@ -1455,6 +1530,7 @@ function crearZip(items){
  b.onclick=()=>set(c.hidden);$('#ttx').onclick=()=>set(false);fr.onchange=to.onchange=calc;
  $('#ttl').onclick=()=>{to.value='';limpiar();reset()};
  $('#ttv').onclick=()=>{set(false);openSV(nodeFor(fr.value));setDest(to.value)};   // mismo recorrido en Street View
+ window.trazarRuta=(a,b)=>{set(true);fr.value=a;to.value=b;calc()};   // la usa el panel "Cómo llegar"
  $('#rt2b').onclick=()=>{const id=cur;clear();set(true);to.value=id;calc()};      // desde la tarjeta de cualquier lugar
 })();
 
